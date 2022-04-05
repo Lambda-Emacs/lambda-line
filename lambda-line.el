@@ -109,17 +109,17 @@ of lambda-line-abbrev-alist"
   :type 'boolean)
 
 ;; Mode line symbols
-(defcustom lambda-line-gui-ro-symbol " ◯◯ "  ;;  ⬤⨂
+(defcustom lambda-line-gui-ro-symbol " ◯◯"  ;;  ⬤⨂
   "Modeline gui read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-gui-mod-symbol " ⬤⬤ " ;;  ⨀
+(defcustom lambda-line-gui-mod-symbol " ⬤⬤" ;;  ⨀
   "Modeline gui modified symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-gui-rw-symbol " ◯⬤ " ; ◉ ◎ ⬤ ◯
+(defcustom lambda-line-gui-rw-symbol " ◯⬤" ; ◉ ◎ ⬤ ◯
   "Modeline gui read-write symbol."
   :group 'lambda-line
   :type 'string)
@@ -413,13 +413,13 @@ want to use in the modeline *as substitute for* the original."
 ;;;;; Vertical Spacer
 
 (defvar lambda-line-vspace "⁣"
-  "Use an invisible character to generate vertical space.")
+  "Use an invisible character to generate vertical space (i.e. padding) in the status-line.")
 
 ;;;;; Mode line status
 ;; ---------------------------------------------------------------------
 (defun lambda-line-status ()
-  "Return buffer status: default symbols are read-only (⨂)/(RO),
-modified (⨀)/(**), or read-write (◯)/(RW)"
+  "Return buffer status: default symbols are read-only (◯◯)/(RO),
+modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
   (let ((read-only   buffer-read-only)
         (modified    (and buffer-file-name (buffer-modified-p))))
     ;; Use status letters for TTY display
@@ -495,7 +495,7 @@ modified (⨀)/(**), or read-write (◯)/(RW)"
                                                        'lambda-line-vspace-inactive))
                 (propertize " "  'face (if active 'lambda-line-active
                                          'lambda-line-inactive)
-                            'display `(raise ,lambda-line-space-bottom))
+                            'display `(raise ,lambda-line-space-top))
                 (propertize name 'face (if active 'lambda-line-active-name
                                          'lambda-line-inactive-name))
                 (propertize " "  'face (if active 'lambda-line-active
@@ -593,6 +593,7 @@ modified (⨀)/(**), or read-write (◯)/(RW)"
                        (concat "("
                                (lambda-line-info-breadcrumbs)
                                ")")
+                       nil
                        ""))
 
 (defun lambda-line-info-activate ()
@@ -616,6 +617,7 @@ modified (⨀)/(**), or read-write (◯)/(RW)"
   (lambda-line-compose " >_ "
                        "Terminal"
                        (concat "(" (file-name-nondirectory shell-file-name) ")")
+                       nil
                        (lambda-line-shorten-directory default-directory 32)))
 
 ;; ---------------------------------------------------------------------
@@ -630,6 +632,7 @@ modified (⨀)/(**), or read-write (◯)/(RW)"
   (lambda-line-compose " >_ "
                        "Terminal"
                        (concat "(" (lambda-line-get-ssh-host default-directory) ")")
+                       nil
                        (lambda-line-shorten-directory (car (last (split-string default-directory ":"))) 32)))
 
 ;;;; Message Mode
@@ -639,115 +642,493 @@ modified (⨀)/(**), or read-write (◯)/(RW)"
 
 (defun lambda-line-messages-mode ()
   (lambda-line-compose (lambda-line-status)
-                       "Message" "(draft)" ""))
+                       "Message" "(draft)" nil ""))
 
-;;;; Define Lambda-line
-(defcustom lambda-line-mode-formats
-  '(;; with :mode-p first
-    (prog-mode              :mode-p lambda-line-prog-mode-p
-                            :format lambda-line-prog-mode)
-    ;; (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
-    ;;                         :format lambda-line-mu4e-dashboard-mode)
-    (text-mode              :mode-p lambda-line-text-mode-p
-                            :format lambda-line-text-mode)
-    (messages-mode          :mode-p lambda-line-messages-mode-p
-                            :format lambda-line-messages-mode)
-    (term-mode              :mode-p lambda-line-term-mode-p
-                            :format lambda-line-term-mode)
-    (vterm-mode             :mode-p lambda-line-vterm-mode-p
-                            :format lambda-line-term-mode)
-    ;; (buffer-menu-mode       :mode-p lambda-line-buffer-menu-mode-p
-    ;;                         :format lambda-line-buffer-menu-mode
-    ;;                         :on-activate lambda-line-buffer-menu-activate
-    ;;                         :on-inactivate lambda-line-buffer-menu-inactivate)
-    ;; (calendar-mode          :mode-p lambda-line-calendar-mode-p
-    ;;                         :format lambda-line-calendar-mode
-    ;;                         :on-activate lambda-line-calendar-activate
-    ;;                         :on-inactivate lambda-line-calendar-inactivate)
-    ;; (completion-list-mode   :mode-p lambda-line-completion-list-mode-p
-    ;;                         :format lambda-line-completion-list-mode)
-    ;; (deft-mode              :mode-p lambda-line-deft-mode-p
-    ;;   :format lambda-line-deft-mode)
-    ;; (doc-view-mode          :mode-p lambda-line-doc-view-mode-p
-    ;;                         :format lambda-line-doc-view-mode)
-    ;; (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
-    ;;                         :format lambda-line-elfeed-search-mode
-    ;;                         :on-activate lambda-line-elfeed-search-activate
-    ;;                         :on-inactivate lambda-line-elfeed-search-inactivate)
-    ;; (elfeed-show-mode       :mode-p lambda-line-elfeed-show-mode-p
-    ;;                         :format lambda-line-elfeed-show-mode)
-    ;; (elpher-mode            :mode-p lambda-line-elpher-mode-p
-    ;;                         :format lambda-line-elpher-mode
-    ;;                         :on-activate lambda-line-elpher-activate)
-    (info-mode              :mode-p lambda-line-info-mode-p
-                            :format lambda-line-info-mode
-                            :on-activate lambda-line-info-activate
-                            :on-inactivate lambda-line-info-inactivate)
-    ;; (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
-    ;;                         :format lambda-line-mu4e-compose-mode)
-    ;; (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
-    ;;                         :format lambda-line-mu4e-headers-mode)
-    ;; (mu4e-loading-mode      :mode-p lambda-line-mu4e-loading-mode-p
-    ;;                         :format lambda-line-mu4e-loading-mode)
-    ;; (mu4e-main-mode         :mode-p lambda-line-mu4e-main-mode-p
-    ;;                         :format lambda-line-mu4e-main-mode)
-    ;; (mu4e-view-mode         :mode-p lambda-line-mu4e-view-mode-p
-    ;;                         :format lambda-line-mu4e-view-mode)
-    ;; (nano-help-mode         :mode-p lambda-line-nano-help-mode-p
-    ;;                         :format lambda-line-nano-help-mode)
-    ;; (org-agenda-mode        :mode-p lambda-line-org-agenda-mode-p
-    ;;                         :format lambda-line-org-agenda-mode)
-    ;; (org-capture-mode       :mode-p lambda-line-org-capture-mode-p
-    ;;                         :format lambda-line-org-capture-mode
-    ;;                         :on-activate lambda-line-org-capture-activate
-    ;;                         :on-inactivate lambda-line-org-capture-inactivate)
-    ;; (org-clock-mode         :mode-p lambda-line-org-clock-mode-p
-    ;;                         :format lambda-line-org-clock-mode
-    ;;                         :on-activate lambda-line-org-clock-activate
-    ;;                         :on-inactivate lambda-line-org-clock-inactivate)
-    ;; (pdf-view-mode          :mode-p lambda-line-pdf-view-mode-p
-    ;;                         :format lambda-line-pdf-view-mode)
 
-    ;; ;; hooks only last
-    ;; (ein-notebook-mode      :on-activate lambda-line-ein-notebook-activate
-    ;;                         :on-inactivate lambda-line-ein-notebook-inactivate)
-    ;; (esh-mode               :on-activate lambda-line-esh-activate
-    ;;                         :on-inactivate lambda-line-esh-inactivate)
-    ;; (ispell-mode            :on-activate lambda-line-ispell-activate
-    ;;                         :on-inactivate lambda-line-ispell-inactivate)
-    ;; (mu4e-mode              :on-activate lambda-line-mu4e-activate
-    ;;                         :on-inactivate lambda-line-mu4e-inactivate)
-    )
-  "Modes to be evalued for modeline.
-KEY mode name, for reference only. Easier to do lookups and/or replacements.
-:MODE-P the function to check if :FORMAT needs to be used, first one wins.
-:ON-ACTIVATE and :ON-INACTIVATE do hook magic on enabling/disabling the mode.
-"
-  :type '(alist :key-type symbol
-                :value-type (plist :key-type (choice (const :mode-p)
-                                                     (const :format)
-                                                     (const :on-activate)
-                                                     (const :on-inactivate))
-                                   :value-type function))
-  :group 'lambda-line)
+;;;; Docview Mode
+;;---------------------------------------------------------------------
+(defun lambda-line-doc-view-mode-p ()
+  (derived-mode-p 'doc-view-mode))
 
-(defcustom lambda-line-mode-format-activate-hook nil
-  "Add hooks on activation of the mode, for those modes that do their own mode-line magic"
-  :type 'hook
-  :options '(turn-on-auto-fill flyspell-mode)
-  :group 'lambda-line)
+(defun lambda-line-doc-view-mode ()
+  (let ((buffer-name (format-mode-line "%b"))
+	    (mode-name   (lambda-line-mode-name))
+	    (branch      (lambda-line-vc-project-branch))
+	    (page-number (concat
+		              (number-to-string (doc-view-current-page)) "/"
+		              (or (ignore-errors
+			                (number-to-string (doc-view-last-page-number)))
+			              "???"))))
+    (lambda-line-compose
+     (lambda-line-status)
+     buffer-name
+     (concat "(" mode-name
+             branch
+	         ")" )
+     nil
+     page-number)))
 
-(defcustom lambda-line-mode-format-inactivate-hook nil
-  "Remove hooks on de-activation of the mode, for those modes that do their own mode-line magic"
-  :type 'hook
-  :options '(turn-on-auto-fill flyspell-mode)
-  :group 'lambda-line)
+;;;; PDF View Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-pdf-view-mode-p ()
+  (derived-mode-p 'pdf-view-mode))
 
-(defcustom lambda-line-default-mode-format 'lambda-line-default-mode
-  "Default mode to evaluate if no match could be found in `lambda-lines-mode-formats'"
-  :type 'function
-  :group 'lambda-line)
+(with-eval-after-load 'pdf-tools
+  (require 'pdf-view))
 
+(defun lambda-line-pdf-view-mode ()
+  (let ((buffer-name (format-mode-line "%b"))
+	    (mode-name   (lambda-line-mode-name))
+	    (branch      (lambda-line-vc-project-branch))
+	    (page-number (concat
+		              (number-to-string (eval `(pdf-view-current-page))) "/"
+		              (or (ignore-errors
+			                (number-to-string (pdf-cache-number-of-pages)))
+			              "???"))))
+    (lambda-line-compose
+     (lambda-line-status)
+     buffer-name
+     (concat "(" mode-name
+             branch
+	         ")" )
+     nil
+     (concat page-number " "))))
+
+;;;; MenuMode
+
+(defun lambda-line-buffer-menu-mode-p ()
+  (derived-mode-p 'buffer-menu-mode))
+
+(defun lambda-line-buffer-menu-mode ()
+  (let ((buffer-name "Buffer list")
+        (mode-name   (lambda-line-mode-name))
+        (position    (format-mode-line "%l:%c:%o ")))
+
+    (lambda-line-compose (lambda-line-status)
+                         buffer-name "" nil position)))
+
+
+;;;; Completion
+;; ---------------------------------------------------------------------
+(defun lambda-line-completion-list-mode-p ()
+  (derived-mode-p 'completion-list-mode))
+
+(defun lambda-line-completion-list-mode ()
+  (let ((buffer-name (format-mode-line "%b"))
+        (mode-name   (lambda-line-mode-name))
+        (position    (format-mode-line "%l:%c:%o ")))
+
+    (lambda-line-compose (lambda-line-status)
+                         buffer-name "" nil position)))
+
+;;;; Deft Mode
+
+(with-eval-after-load 'deft
+  (defun deft-print-header ()
+    (force-mode-line-update)
+    (widget-insert "\n")))
+
+(defun lambda-line-deft-mode-p ()
+  (derived-mode-p 'deft-mode))
+
+(defun lambda-line-deft-mode ()
+  (let ((prefix " DEFT ")
+        (primary "Search:")
+        (filter  (if deft-filter-regexp
+                     (deft-whole-filter-regexp) "<filter>"))
+        (matches (if deft-filter-regexp
+                     (format "%d matches" (length deft-current-files))
+                   (format "%d notes" (length deft-all-files)))))
+    (lambda-line-compose prefix primary filter nil matches)))
+
+;;;; Calendar Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-calendar-mode-p ()
+  (derived-mode-p 'calendar-mode))
+
+(defun lambda-line-calendar-mode () "")
+
+;; Calendar (no header, only overline)
+(with-eval-after-load 'calendar
+  (defun lambda-line-calendar-setup-header ()
+    (setq header-line-format "")
+    (face-remap-add-relative
+     'header-line `(:overline ,(face-foreground 'default)
+                    :height 0.5
+                    :background ,(face-background 'default)))))
+
+(defun lambda-line-calendar-activate ()
+  (with-eval-after-load 'calendar
+    (add-hook 'calendar-initial-window-hook
+              #'lambda-line-calendar-setup-header)))
+
+(defun lambda-line-calendar-inactivate ()
+  (remove-hook 'calendar-initial-window-hook
+               #'lambda-line-calendar-setup-header))
+
+;;;; Org Capture
+;; ---------------------------------------------------------------------
+(defun lambda-line-org-capture-mode-p ()
+  (bound-and-true-p org-capture-mode))
+
+(defun lambda-line-org-capture-mode ()
+  (lambda-line-compose (lambda-line-status)
+                       "Capture"
+                       (concat "(" (org-capture-get :description) ")")
+                       nil
+                       ""))
+
+(defun lambda-line-org-capture-turn-off-header-line ()
+  (setq-local header-line-format (default-value 'header-line-format))
+  (message nil))
+
+(defun lambda-line-org-capture-activate ()
+  (with-eval-after-load 'org-capture
+    (add-hook 'org-capture-mode-hook
+              #'lambda-line-org-capture-turn-off-header-line)))
+
+(defun lambda-line-org-capture-inactivate ()
+  (remove-hook 'org-capture-mode-hook
+               #'lambda-line-org-capture-turn-off-header-line))
+
+
+;;;; Org Agenda
+;; ---------------------------------------------------------------------
+(defun lambda-line-org-agenda-mode-p ()
+  (derived-mode-p 'org-agenda-mode))
+
+(defun lambda-line-org-agenda-mode ()
+  (lambda-line-compose (lambda-line-status)
+                       "Agenda"
+                       ""
+                       nil
+                       (concat (propertize "◴"
+                                           'face 'default
+                                           'display '(raise 0.06))
+                               (format-time-string "%H:%M "))))
+
+;;;; Org Clock
+;; ---------------------------------------------------------------------
+(defun lambda-line-org-clock-mode-p ()
+  (and (boundp 'org-mode-line-string)
+       (stringp org-mode-line-string)))
+
+(defun lambda-line-org-clock-mode ()
+  (let ((buffer-name (format-mode-line "%b"))
+        (mode-name   (lambda-line-mode-name))
+        (branch      (lambda-line-vc-project-branch))
+        (position    (format-mode-line "%l:%c:%o")))
+    (lambda-line-compose (lambda-line-status)
+                         buffer-name
+                         (concat "(" mode-name
+                                 (when branch
+                                   branch)
+                                 ")" )
+                         (concat
+                          ;; Narrowed buffer
+                          (when (buffer-narrowed-p)
+                            (propertize "⇥ "  'face `(:inherit fringe)))
+                          org-mode-line-string
+                          " "
+                          nil
+                          position
+                          " "))))
+
+(defun lambda-line-org-clock-out ()
+  (setq org-mode-line-string nil)
+  (force-mode-line-update))
+
+(defun lambda-line-org-clock-activate ()
+  (with-eval-after-load 'org-clock
+    (add-hook 'org-clock-out-hook #'lambda-line-org-clock-out)))
+
+(defun lambda-line-org-clock-inactivate ()
+  (remove-hook 'org-clock-out-hook
+               #'lambda-line-org-clock-out))
+
+;;;; Elfeed
+;; ---------------------------------------------------------------------
+(defun lambda-line-elfeed-search-mode-p ()
+  (derived-mode-p 'elfeed-search-mode))
+
+(defun lambda-line-elfeed-search-mode ()
+  (let* ((prefix "NEWS")
+         (no-database (zerop (elfeed-db-last-update)))
+         (update      (> (elfeed-queue-count-total) 0))
+
+         (name  (cond (no-database "No database")
+                      (update      "Update:")
+                      (t           "Search:")))
+         (primary (cond  (no-database "")
+                         (update
+                          (let ((total (elfeed-queue-count-total))
+                                (in-process (elfeed-queue-count-active)))
+                            (format "%d jobs pending, %d active"
+                                    (- total in-process) in-process)))
+                         (t  (let* ((db-time (seconds-to-time (elfeed-db-last-update)))
+                                    (unread ))
+                               (cond (elfeed-search-filter-active "")
+                                     ((string-match-p "[^ ]" elfeed-search-filter)
+                                      elfeed-search-filter)
+                                     (""))))))
+         (secondary (cond
+                     ((zerop (elfeed-db-last-update)) "")
+                     ((> (elfeed-queue-count-total) 0) "")
+                     (t (elfeed-search--count-unread)))))
+    (lambda-line-compose nil name primary nil secondary)))
+
+;; Elfeed uses header-line, we need to tell it to use our own format
+(defun lambda-line-elfeed-setup-header ()
+  (setq header-line-format (default-value 'header-line-format)))
+
+(defun lambda-line-elfeed-search-activate ()
+  (with-eval-after-load 'elfeed
+    (if (eq lambda-line-position 'top)
+        (setq elfeed-search-header-function #'lambda-line-elfeed-setup-header))))
+
+(defun lambda-line-elfeed-search-inactivate ()
+  (if (boundp 'elfeed-search-header-function)
+      (setq elfeed-search-header-function #'elfeed-search--header)))
+
+;; ---------------------------------------------------------------------
+(defun lambda-line-elfeed-show-mode-p ()
+  (derived-mode-p 'elfeed-show-mode))
+
+(defun lambda-line-elfeed-show-mode ()
+  (let* ((title        (elfeed-entry-title elfeed-show-entry))
+         (tags         (elfeed-entry-tags elfeed-show-entry))
+         (tags-str     (mapconcat #'symbol-name tags ", "))
+         (date         (seconds-to-time (elfeed-entry-date elfeed-show-entry)))
+         (feed         (elfeed-entry-feed elfeed-show-entry))
+         (feed-title   (plist-get (elfeed-feed-meta feed) :title))
+         (entry-author (elfeed-meta elfeed-show-entry :author)))
+    (lambda-line-compose nil
+                         title
+                         ;; (nano-modeline-truncate title 40)
+                         (concat "(" tags-str ")")
+                         feed-title)))
+
+
+;;;; Mu4e
+
+(defun lambda-line-mu4e-last-query ()
+  "Get the most recent mu4e query or nil if there is none."
+  (if (fboundp 'mu4e-last-query)
+      (mu4e-last-query)
+    mu4e~headers-last-query))
+
+(defun lambda-line-mu4e-context ()
+  "Return the current mu4e context as a non propertized string."
+
+  (if (> (length (mu4e-context-label)) 0)
+      (concat "(" (substring-no-properties (mu4e-context-label) 1 -1) ")")
+    "(none)"))
+
+(defun lambda-line-mu4e-server-props ()
+  "Encapsulates the call to the variable mu4e-/~server-props
+depending on the version of mu4e."
+  (if (string> mu4e-mu-version "1.6.5")
+      mu4e--server-props
+    mu4e~server-props))
+
+(defun lambda-line-mu4e-activate ()
+  (with-eval-after-load 'mu4e
+    (advice-add 'mu4e~header-line-format :override #'lambda-line)))
+
+(defun lambda-line-mu4e-deactivate ()
+  (advice-remove #'mu4e~header-line-format #'lambda-line))
+
+;; ---------------------------------------------------------------------
+(defun lambda-line-mu4e-dashboard-mode-p ()
+  (bound-and-true-p mu4e-dashboard-mode))
+
+(defun lambda-line-mu4e-dashboard-mode ()
+  (lambda-line-compose (lambda-line-status)
+                       (format "%d messages"
+                               (plist-get (lambda-line-mu4e-server-props) :doccount))
+                       ""
+                       nil
+                       " "))
+
+;; ---------------------------------------------------------------------
+(defun lambda-line-mu4e-loading-mode-p ()
+  (derived-mode-p 'mu4e-loading-mode))
+
+
+(defun lambda-line-mu4e-loading-mode ()
+  (lambda-line-compose (lambda-line-status)
+                       "Loading..."
+                       (lambda-line-mu4e-context)
+                       nil
+                       (format-time-string "%A %d %B %Y, %H:%M ")))
+
+;; ---------------------------------------------------------------------
+(defun lambda-line-mu4e-main-mode-p ()
+  (derived-mode-p 'mu4e-main-mode))
+
+(defun lambda-line-mu4e-main-mode ()
+  (lambda-line-compose (lambda-line-status)
+                       (lambda-line-mu4e-context)
+                       ""
+                       nil
+                       (format-time-string "%A %d %B %Y, %H:%M ")))
+
+;; ---------------------------------------------------------------------
+(defun lambda-line-mu4e-compose-mode-p ()
+  (derived-mode-p 'mu4e-compose-mode))
+
+(defun lambda-line-mu4e-compose-mode ()
+  (lambda-line-compose (lambda-line-status)
+                       (format-mode-line "%b")
+                       ""
+                       nil
+                       (format "[%s] "
+                               (lambda-line-mu4e-quote
+                                (mu4e-context-name (mu4e-context-current))))))
+
+;; ---------------------------------------------------------------------
+(defun lambda-line-mu4e-quote (str)
+  (if (version< "1.6.5" mu4e-mu-version)
+      (mu4e~quote-for-modeline str)
+    (mu4e-quote-for-modeline str)))
+
+(defun lambda-line-mu4e-headers-mode-p ()
+  (derived-mode-p 'mu4e-headers-mode))
+
+(defun lambda-line-mu4e-headers-mode ()
+  (let ((mu4e-modeline-max-width 80))
+    (lambda-line-compose (lambda-line-status)
+                         "Search:"
+                         (or (lambda-line-mu4e-quote
+                              (lambda-line-mu4e-last-query)) "")
+                         nil
+                         (format "[%s] "
+                                 (lambda-line-mu4e-quote
+                                  (mu4e-context-name (mu4e-context-current)))))))
+
+;; ---------------------------------------------------------------------
+(defun lambda-line-mu4e-view-mode-p ()
+  (derived-mode-p 'mu4e-view-mode))
+
+(defun lambda-line-mu4e-view-mode ()
+  (let* ((msg     (mu4e-message-at-point))
+         (subject (mu4e-message-field msg :subject))
+         (from    (mu4e~headers-contact-str (mu4e-message-field msg :from)))
+         (date    (mu4e-message-field msg :date)))
+    (lambda-line-compose (lambda-line-status)
+                         (or from "")
+                         (concat "(" (lambda-line-truncate (or subject "") 50 "…") ")")
+                         nil
+                         (concat (or (format-time-string mu4e-headers-date-format date) "") " "))))
+
+(defun lambda-line-mu4e-activate ()
+  (with-eval-after-load 'mu4e
+    (advice-add 'mu4e~header-line-format :override #'lambda-line)))
+
+(defun lambda-line-mu4e-inactivate ()
+  (advice-remove #'mu4e~header-line-format #'lambda-line))
+
+;;;; Ein
+
+(defun lambda-line-ein-notebook-mode ()
+  (let ((buffer-name (format-mode-line "%b")))
+    (lambda-line-compose (if (ein:notebook-modified-p) "**" "RW")
+                         buffer-name
+                         ""
+                         nil
+                         (ein:header-line))))
+
+;; since the EIN library itself is constantly re-rendering the notebook, and thus
+;; re-setting the header-line-format, we cannot use the lambda-line function to set
+;; the header format in a notebook buffer. Fortunately, EIN exposes the
+;; ein:header-line-format variable for just this purpose.
+
+(defun lambda-line-ein-notebook-activate ()
+  (with-eval-after-load 'ein
+    (if (eq lambda-line-position 'top)
+        (setq ein:header-line-format '((:eval (lambda-line-ein-notebook-mode)))))))
+
+(defun lambda-line-ein-notebook-inactivate ()
+  (if (boundp 'ein:header-line-format)
+      (setq ein:header-line-format '(:eval (ein:header-line)))))
+
+
+;;;; Buffer Menu Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-buffer-menu-mode-p ()
+  (derived-mode-p 'buffer-menu-mode))
+
+(defun lambda-line-buffer-menu-mode ()
+  (let ((buffer-name "Buffer list")
+        (mode-name   (lambda-line-mode-name))
+        (position    (format-mode-line "%l:%c")))
+
+    (lambda-line-compose nil
+                         buffer-name "" nil position)))
+
+;;(defun buffer-menu-mode-header-line ()
+;;  (face-remap-add-relative
+;;   'header-line `(:background ,(face-background 'nano-subtle))))
+;;(add-hook 'Buffer-menu-mode-hook
+;;          #'buffer-menu-mode-header-line)
+
+(defun lambda-line-buffer-menu-activate ()
+  (if (eq lambda-line-position 'top)
+      (setq Buffer-menu-use-header-line nil)))
+
+(defun lambda-line-buffer-menu-inactivate ()
+  (custom-reevaluate-setting 'Buffer-menu-use-header-line))
+
+;;;; Elpher Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-elpher-mode-p ()
+  (derived-mode-p 'elpher-mode))
+
+(defun lambda-line-elpher-mode ()
+  (let* ((display-string (elpher-page-display-string elpher-current-page))
+         (sanitized-display-string (replace-regexp-in-string "%" "%%" display-string))
+         (address (elpher-page-address elpher-current-page))
+         (tls-string (if (and (not (elpher-address-about-p address))
+                              (member (elpher-address-protocol address)
+                                      '("gophers" "gemini")))
+                         "(TLS encryption)"
+                       "")))
+    (lambda-line-compose nil
+                         sanitized-display-string
+                         tls-string
+                         nil
+                         "")))
+
+(defun lambda-line-elpher-activate ()
+  (with-eval-after-load 'elpher
+    (setq elpher-use-header nil)))
+
+;;;; Esh Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-esh-activate ()
+  (with-eval-after-load 'esh-mode
+    (setq eshell-status-in-mode-line nil)))
+
+(defun lambda-line-esh-inactivate ()
+  (custom-reevaluate-setting 'eshell-status-in-mode-line))
+
+;;;; Ispell Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-enlarge-ispell-choices-buffer (buffer)
+  (when (string= (buffer-name buffer) "*Choices*")
+    (with-current-buffer buffer
+      ;; (enlarge-window +2)
+      (setq-local header-line-format nil)
+      (setq-local mode-line-format nil))))
+
+(defun lambda-line-ispell-activate ()
+  (with-eval-after-load 'ispell
+    (advice-add #'ispell-display-buffer :after
+                #'lambda-line-enlarge-ispell-choices-buffer)))
+
+(defun lambda-line-ispell-inactivate ()
+  (advice-remove #'ispell-display-buffer
+                 #'lambda-line-enlarge-ispell-choices-buffer))
 
 ;;;; Setup Lambda-line
 ;; ---------------------------------------------------------------------
