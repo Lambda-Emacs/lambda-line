@@ -145,10 +145,114 @@ of lambda-line-abbrev-alist"
   :type 'float
   :group 'lambda-line)
 
-(defcustom lambda-line-symbol-position .07
+(defcustom lambda-line-symbol-position .065
   "Space adjustment for bottom of modeline
  Negative is downwards."
   :type 'float
+  :group 'lambda-line)
+
+(defcustom lambda-line-mode-formats
+  '(;; with :mode-p first
+    (prog-mode              :mode-p lambda-line-prog-mode-p
+                            :format lambda-line-prog-mode)
+    (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
+                            :format lambda-line-mu4e-dashboard-mode)
+    (text-mode              :mode-p lambda-line-text-mode-p
+                            :format lambda-line-text-mode)
+    (messages-mode          :mode-p lambda-line-messages-mode-p
+                            :format lambda-line-messages-mode)
+    (term-mode              :mode-p lambda-line-term-mode-p
+                            :format lambda-line-term-mode)
+    (vterm-mode             :mode-p lambda-line-vterm-mode-p
+                            :format lambda-line-term-mode)
+    (buffer-menu-mode       :mode-p lambda-line-buffer-menu-mode-p
+                            :format lambda-line-buffer-menu-mode
+                            :on-activate lambda-line-buffer-menu-activate
+                            :on-inactivate lambda-line-buffer-menu-inactivate)
+    (calendar-mode          :mode-p lambda-line-calendar-mode-p
+                            :format lambda-line-calendar-mode
+                            :on-activate lambda-line-calendar-activate
+                            :on-inactivate lambda-line-calendar-inactivate)
+    (completion-list-mode   :mode-p lambda-line-completion-list-mode-p
+                            :format lambda-line-completion-list-mode)
+    (deft-mode              :mode-p lambda-line-deft-mode-p
+      :format lambda-line-deft-mode)
+    (doc-view-mode          :mode-p lambda-line-doc-view-mode-p
+                            :format lambda-line-doc-view-mode)
+    (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
+                            :format lambda-line-elfeed-search-mode
+                            :on-activate lambda-line-elfeed-search-activate
+                            :on-inactivate lambda-line-elfeed-search-inactivate)
+    (elfeed-show-mode       :mode-p lambda-line-elfeed-show-mode-p
+                            :format lambda-line-elfeed-show-mode)
+    (elpher-mode            :mode-p lambda-line-elpher-mode-p
+                            :format lambda-line-elpher-mode
+                            :on-activate lambda-line-elpher-activate)
+    (info-mode              :mode-p lambda-line-info-mode-p
+                            :format lambda-line-info-mode
+                            :on-activate lambda-line-info-activate
+                            :on-inactivate lambda-line-info-inactivate)
+    (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
+                            :format lambda-line-mu4e-compose-mode)
+    (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
+                            :format lambda-line-mu4e-headers-mode)
+    (mu4e-loading-mode      :mode-p lambda-line-mu4e-loading-mode-p
+                            :format lambda-line-mu4e-loading-mode)
+    (mu4e-main-mode         :mode-p lambda-line-mu4e-main-mode-p
+                            :format lambda-line-mu4e-main-mode)
+    (mu4e-view-mode         :mode-p lambda-line-mu4e-view-mode-p
+                            :format lambda-line-mu4e-view-mode)
+    (org-agenda-mode        :mode-p lambda-line-org-agenda-mode-p
+                            :format lambda-line-org-agenda-mode)
+    (org-capture-mode       :mode-p lambda-line-org-capture-mode-p
+                            :format lambda-line-org-capture-mode
+                            :on-activate lambda-line-org-capture-activate
+                            :on-inactivate lambda-line-org-capture-inactivate)
+    (org-clock-mode         :mode-p lambda-line-org-clock-mode-p
+                            :format lambda-line-org-clock-mode
+                            :on-activate lambda-line-org-clock-activate
+                            :on-inactivate lambda-line-org-clock-inactivate)
+    (pdf-view-mode          :mode-p lambda-line-pdf-view-mode-p
+                            :format lambda-line-pdf-view-mode)
+
+    ;; hooks only go last
+    (ein-notebook-mode      :on-activate lambda-line-ein-notebook-activate
+                            :on-inactivate lambda-line-ein-notebook-inactivate)
+    (esh-mode               :on-activate lambda-line-esh-activate
+                            :on-inactivate lambda-line-esh-inactivate)
+    (ispell-mode            :on-activate lambda-line-ispell-activate
+                            :on-inactivate lambda-line-ispell-inactivate)
+    (mu4e-mode              :on-activate lambda-line-mu4e-activate
+                            :on-inactivate lambda-line-mu4e-inactivate)
+    )
+  "Modes to be evalued for modeline.
+KEY mode name, for reference only. Easier to do lookups and/or replacements.
+:MODE-P the function to check if :FORMAT needs to be used, first one wins.
+:ON-ACTIVATE and :ON-INACTIVATE do hook magic on enabling/disabling the mode.
+"
+  :type '(alist :key-type symbol
+                :value-type (plist :key-type (choice (const :mode-p)
+                                                     (const :format)
+                                                     (const :on-activate)
+                                                     (const :on-inactivate))
+                                   :value-type function))
+  :group 'lambda-line)
+
+(defcustom lambda-line-mode-format-activate-hook nil
+  "Add hooks on activation of the mode, for those modes that define their own status-line."
+  :type 'hook
+  :options '(turn-on-auto-fill flyspell-mode)
+  :group 'lambda-line)
+
+(defcustom lambda-line-mode-format-inactivate-hook nil
+  "Remove hooks on de-activation of the mode, for those modes that define their own status-line."
+  :type 'hook
+  :options '(turn-on-auto-fill flyspell-mode)
+  :group 'lambda-line)
+
+(defcustom lambda-line-default-mode-format 'lambda-line-default-mode
+  "Default mode to evaluate if no match could be found in `lambda-lines-mode-formats'"
+  :type 'function
   :group 'lambda-line)
 
 ;;;; Faces
@@ -165,11 +269,11 @@ of lambda-line-abbrev-alist"
   :group 'lambda-line-inactive)
 
 (defface lambda-line-vspace-active
-  '((t (:inherit (mode-line) :height 1.5)))
+  '((t (:invisible t :height 1.5)))
   "Face for vertical spacer in active line.")
 
 (defface lambda-line-vspace-inactive
-  '((t (:inherit (mode-line-inactive) :height 1.5)))
+  '((t (:invisible t :height 1.5)))
   "Face for vertical spacer in inactive line.")
 
 (defface lambda-line-active-name
@@ -240,10 +344,9 @@ of lambda-line-abbrev-alist"
 
 ;;;;; Display Faces
 
-(defface lambda-line-visual-bell '((t (:inherit 'error :inverse-video t)))
+(defface lambda-line-visual-bell '((t (:background "red3")))
   "Face to use for the mode-line when `lambda-line-visual-bell-config' is used."
   :group 'lambda-line)
-
 
 ;;;; Setup Functions
 
@@ -251,30 +354,24 @@ of lambda-line-abbrev-alist"
 
 ;; See https://github.com/hlissner/emacs-doom-themes for the basic idea
 
-;;;###autoload
 (defun lambda-line-visual-bell-fn ()
   "Blink the status-line red briefly. Set `ring-bell-function' to this to use it."
   (let ((lambda-line--bell-cookie (if (eq lambda-line-position 'bottom)
                                       (face-remap-add-relative 'mode-line 'lambda-line-visual-bell)
                                     (face-remap-add-relative 'header-line 'lambda-line-visual-bell)))
-        (force-mode-line-update))
+        (force-mode-line-update t))
     (run-with-timer 0.15 nil
                     (lambda (cookie buf)
                       (with-current-buffer buf
                         (face-remap-remove-relative cookie)
-                        (force-mode-line-update)))
+                        (force-mode-line-update t)))
                     lambda-line--bell-cookie
                     (current-buffer))))
 
-;;;###autoload
 (defun lambda-line-visual-bell-config ()
   "Enable flashing the status-line on error."
   (setq ring-bell-function #'lambda-line-visual-bell-fn
         visible-bell t))
-
-;; Use lambda-line-visual-bell when var is set to t
-(when lambda-line-visual-bell
-  (lambda-line-visual-bell-config))
 
 ;;;;; Abbreviate Major-Mode
 ;; Source: https://www.masteringemacs.org/article/hiding-replacing-modeline-strings
@@ -1198,6 +1295,10 @@ below or a buffer local variable 'no-mode-line'."
 
   (lambda-line)
 
+  ;; Use lambda-line-visual-bell when var is set to t
+  (when lambda-line-visual-bell
+    (lambda-line-visual-bell-config))
+
   ;; This hooks is necessary to register selected window because when
   ;;  a modeline is evaluated, the corresponding window is always selected.
   (add-hook 'post-command-hook #'lambda-line--update-selected-window)
@@ -1225,17 +1326,15 @@ below or a buffer local variable 'no-mode-line'."
   (remove-hook 'window-configuration-change-hook
                #'lambda-line-update-windows)
 
+  ;; Deactivate lambda-line-visual-bell
+  (setq lambda-line-visual-bell nil)
+
   (setq         mode-line-format lambda-line--saved-mode-line-format)
   (setq-default mode-line-format lambda-line--saved-mode-line-format)
   (setq         header-line-format lambda-line--saved-header-line-format)
   (setq-default header-line-format lambda-line--saved-header-line-format))
 
-
-
 ;;;; Lambda-line minor mode
-;;
-;; Activation function
-;;
 
 ;; Store the default mode-line format
 (defvar lambda-line--default-mode-line mode-line-format)
