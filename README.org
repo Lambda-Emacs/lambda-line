@@ -1,0 +1,3 @@
+
+Lambda-line is a custom status-line for Emacs. It is configurable for use either
+as a header-line or as a footer-line (the default "mode-line" for Emacs).  
