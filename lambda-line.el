@@ -38,7 +38,6 @@
 (require 'face-remap)
 (require 'cl-lib)
 
-
 ;;;; Group
 
 (defgroup lambda-line nil
@@ -47,21 +46,6 @@
   :link '(url-link :tag "Homepage" "https://github.com/Lambda-Emacs/lambda-line"))
 
 ;;;; Custom Variable Settings
-
-(defcustom lambda-line-height 25
-  "Specify the height of the status-line. It's only respected in GUI.
-If the actual char height is larger, it respects the actual char
-height. If `lambda-line-height' is <= 0 the status-line will have
-default height."
-  :type 'integer
-  :group 'lambda-line)
-
-(defcustom lambda-line-bar-width 4
-  "How wide the mode-line bar should be. It's only respected in GUI."
-  :type 'integer
-  :set (lambda (sym val)
-         (set sym (if (> val 0) val 1)))
-  :group 'lambda-line)
 
 (defcustom lambda-line-window-width-limit 0.25
   "The limit of the window width.
@@ -1187,6 +1171,7 @@ below or a buffer local variable 'no-mode-line'."
                         (t nil))))))))
 
 
+
 (defun lambda-line-mode--activate ()
   "Activate lambda-line."
 
@@ -1222,13 +1207,11 @@ below or a buffer local variable 'no-mode-line'."
   ;;  -> see https://github.com/rougier/nano-modeline/issues/24
   ;; (add-hook 'window-configuration-change-hook #'lambda-line-update-windows)
 
-  (force-mode-line-update t)
+  (force-mode-line-update t))
 
-  )
-
-
+;; Deactivate status-line
 (defun lambda-line-mode--deactivate ()
-  "Deactivate lambda-line and restore default mode-line"
+  "Deactivate lambda-line and restore default mode-line."
 
   (dolist (elt lambda-line-mode-formats)
     (let* ((config (cdr elt))
@@ -1269,9 +1252,7 @@ below or a buffer local variable 'no-mode-line'."
     (lambda-line-mode--deactivate))
 
   ;; Run any registered hooks
-  (run-hooks 'lambda-line-mode-hook)
-
-  )
+  (run-hooks 'lambda-line-mode-hook))
 
 ;;; Provide:
   (provide 'lambda-line)
