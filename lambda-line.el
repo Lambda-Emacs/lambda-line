@@ -154,7 +154,9 @@ of lambda-line-abbrev-alist"
 (defcustom lambda-line-mode-formats
   '(;; with :mode-p first
     (prog-mode              :mode-p lambda-line-prog-mode-p
-                            :format lambda-line-prog-mode)
+                            :format lambda-line-prog-mode
+                            :on-activate lambda-line-prog-activate
+                            :on-deactivate lambda-line-prog-deactivate)
     (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
                             :format lambda-line-mu4e-dashboard-mode)
     (text-mode              :mode-p lambda-line-text-mode-p
@@ -433,6 +435,23 @@ want to use in the modeline *as substitute for* the original."
   "Return current major mode name"
   (format-mode-line mode-name))
 
+;;;;; String Trim
+(defun lambda-line--string-trim-left (string)
+  "Remove whitespace at the beginning of STRING."
+  (if (string-match "\\`[ \t\n\r]+" string)
+      (replace-match "" t t string)
+    string))
+
+(defun lambda-line--string-trim-right (string)
+  "Remove whitespace at the end of STRING."
+  (if (string-match "[ \t\n\r]+\\'" string)
+      (replace-match "" t t string)
+    string))
+
+(defun lambda-line--string-trim (string)
+  "Remove whitespace at the beginning and end of STRING."
+  (lambda-line--string-trim-left (lambda-line--string-trim-right string)))
+
 ;;;;; Branch display
 ;; -------------------------------------------------------------------
 (defun lambda-line-project-name ()
@@ -492,6 +511,35 @@ want to use in the modeline *as substitute for* the original."
     (when path
       (setq output (concat "…/" output)))
     output))
+
+
+;;;;; Flycheck/Flymake Segment
+(defvar-local lambda-line--flycheck-text nil)
+(defun lambda-line--update-flycheck-segment (&optional status)
+  "Update `lambda-line--flycheck-text' against the reported flycheck STATUS."
+  (setq lambda-line--flycheck-text
+        (pcase status
+          ('finished (if flycheck-current-errors
+                         (let-alist (flycheck-count-errors flycheck-current-errors)
+                           (let ((sum (+ (or .error 0) (or .warning 0))))
+                             (propertize (concat "⚑ Issues: "
+                                                 (number-to-string sum)
+                                                 "  ")
+                                         'face (if .error
+                                                   'error
+                                                 'warning))))
+                       (propertize "✔ Good  " 'face 'success)))
+          ('running (propertize "Δ Checking  " 'face 'info))
+          ('errored (propertize "✖ Error  " 'face 'error))
+          ('interrupted (propertize "⏸ Paused  " 'face 'lambda-line-inactive))
+          ('no-checker ""))))
+
+(defun lambda-line-check-syntax ()
+  "Displays syntax-checking information from flymake/flycheck in
+the mode-line (if available)."
+  (if (and (boundp 'flymake-mode) flymake-mode)
+      (concat (lambda-line--string-trim (format-mode-line
+                                         flymake--mode-line-format)) " ") lambda-line--flycheck-text))
 
 ;;;;; Vertical Spacer
 
@@ -573,7 +621,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                                                 'lambda-line-inactive-status-**))))))
 
          (left (concat
-                ;; add invisible char for extra padding
+                ;; add invisible char for extra vertical padding
                 (propertize lambda-line-vspace 'face (if active 'lambda-line-vspace-active
                                                        'lambda-line-vspace-inactive))
                 (propertize " "  'face (if active 'lambda-line-active
@@ -637,22 +685,29 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                                  (when branch
                                    branch)
                                  ")")
-                         nil
+                         (lambda-line-check-syntax)
                          (concat
                           ;; Narrowed buffer
                           (when (buffer-narrowed-p)
                             (propertize "⇥ "  'face `(:inherit fringe)))
-                          position))))
+                          (if (or (boundp 'flycheck-mode)
+                                  (boundp 'flymake-mode))
+                              (concat position " ")
+                            position)))))
 
+(defun lambda-line-prog-activate ()
+  ;; Setup flycheck hooks
+  (add-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
+  (add-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
+  )
 
-;;;; Mode Functions
-;;;;; Prog & Text Modes
-;; ---------------------------------------------------------------------
-(defun lambda-line-prog-mode-p ()
-  (derived-mode-p 'prog-mode))
+(defun lambda-line-prog-deactivate ()
+  ;; Remove flycheck hooks
+  (remove-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
+  (remove-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
+  )
 
-(defun lambda-line-prog-mode ()
-  (lambda-line-default-mode))
+;;;;; Text Mode
 
 (defun lambda-line-text-mode-p ()
   (derived-mode-p 'text-mode))
