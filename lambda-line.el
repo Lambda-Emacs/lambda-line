@@ -170,11 +170,11 @@ of lambda-line-abbrev-alist"
     (buffer-menu-mode       :mode-p lambda-line-buffer-menu-mode-p
                             :format lambda-line-buffer-menu-mode
                             :on-activate lambda-line-buffer-menu-activate
-                            :on-inactivate lambda-line-buffer-menu-inactivate)
+                            :on-deactivate lambda-line-buffer-menu-deactivate)
     (calendar-mode          :mode-p lambda-line-calendar-mode-p
                             :format lambda-line-calendar-mode
                             :on-activate lambda-line-calendar-activate
-                            :on-inactivate lambda-line-calendar-inactivate)
+                            :on-deactivate lambda-line-calendar-deactivate)
     (completion-list-mode   :mode-p lambda-line-completion-list-mode-p
                             :format lambda-line-completion-list-mode)
     (deft-mode              :mode-p lambda-line-deft-mode-p
@@ -184,7 +184,7 @@ of lambda-line-abbrev-alist"
     (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
                             :format lambda-line-elfeed-search-mode
                             :on-activate lambda-line-elfeed-search-activate
-                            :on-inactivate lambda-line-elfeed-search-inactivate)
+                            :on-deactivate lambda-line-elfeed-search-deactivate)
     (elfeed-show-mode       :mode-p lambda-line-elfeed-show-mode-p
                             :format lambda-line-elfeed-show-mode)
     (elpher-mode            :mode-p lambda-line-elpher-mode-p
@@ -193,7 +193,7 @@ of lambda-line-abbrev-alist"
     (info-mode              :mode-p lambda-line-info-mode-p
                             :format lambda-line-info-mode
                             :on-activate lambda-line-info-activate
-                            :on-inactivate lambda-line-info-inactivate)
+                            :on-deactivate lambda-line-info-deactivate)
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
@@ -209,34 +209,34 @@ of lambda-line-abbrev-alist"
     (org-capture-mode       :mode-p lambda-line-org-capture-mode-p
                             :format lambda-line-org-capture-mode
                             :on-activate lambda-line-org-capture-activate
-                            :on-inactivate lambda-line-org-capture-inactivate)
+                            :on-deactivate lambda-line-org-capture-deactivate)
     (org-clock-mode         :mode-p lambda-line-org-clock-mode-p
                             :format lambda-line-org-clock-mode
                             :on-activate lambda-line-org-clock-activate
-                            :on-inactivate lambda-line-org-clock-inactivate)
+                            :on-deactivate lambda-line-org-clock-deactivate)
     (pdf-view-mode          :mode-p lambda-line-pdf-view-mode-p
                             :format lambda-line-pdf-view-mode)
 
     ;; hooks only go last
     (ein-notebook-mode      :on-activate lambda-line-ein-notebook-activate
-                            :on-inactivate lambda-line-ein-notebook-inactivate)
+                            :on-deactivate lambda-line-ein-notebook-deactivate)
     (esh-mode               :on-activate lambda-line-esh-activate
-                            :on-inactivate lambda-line-esh-inactivate)
+                            :on-deactivate lambda-line-esh-deactivate)
     (ispell-mode            :on-activate lambda-line-ispell-activate
-                            :on-inactivate lambda-line-ispell-inactivate)
+                            :on-deactivate lambda-line-ispell-deactivate)
     (mu4e-mode              :on-activate lambda-line-mu4e-activate
-                            :on-inactivate lambda-line-mu4e-inactivate)
+                            :on-deactivate lambda-line-mu4e-deactivate)
     )
   "Modes to be evalued for modeline.
 KEY mode name, for reference only. Easier to do lookups and/or replacements.
 :MODE-P the function to check if :FORMAT needs to be used, first one wins.
-:ON-ACTIVATE and :ON-INACTIVATE do hook magic on enabling/disabling the mode.
+:ON-ACTIVATE and :ON-DEACTIVATE do hook magic on enabling/disabling the mode.
 "
   :type '(alist :key-type symbol
                 :value-type (plist :key-type (choice (const :mode-p)
                                                      (const :format)
                                                      (const :on-activate)
-                                                     (const :on-inactivate))
+                                                     (const :on-deactivate))
                                    :value-type function))
   :group 'lambda-line)
 
@@ -246,7 +246,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   :options '(turn-on-auto-fill flyspell-mode)
   :group 'lambda-line)
 
-(defcustom lambda-line-mode-format-inactivate-hook nil
+(defcustom lambda-line-mode-format-deactivate-hook nil
   "Remove hooks on de-activation of the mode, for those modes that define their own status-line."
   :type 'hook
   :options '(turn-on-auto-fill flyspell-mode)
@@ -682,7 +682,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
   (if (eq lambda-line-position 'top)
       (setq Info-use-header-line nil)))
 
-(defun lambda-line-info-inactivate ()
+(defun lambda-line-info-deactivate ()
   (custom-reevaluate-setting 'Info-use-header-line))
 
 ;;;; Term & Vterm
@@ -852,7 +852,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
     (add-hook 'calendar-initial-window-hook
               #'lambda-line-calendar-setup-header)))
 
-(defun lambda-line-calendar-inactivate ()
+(defun lambda-line-calendar-deactivate ()
   (remove-hook 'calendar-initial-window-hook
                #'lambda-line-calendar-setup-header))
 
@@ -877,7 +877,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
     (add-hook 'org-capture-mode-hook
               #'lambda-line-org-capture-turn-off-header-line)))
 
-(defun lambda-line-org-capture-inactivate ()
+(defun lambda-line-org-capture-deactivate ()
   (remove-hook 'org-capture-mode-hook
                #'lambda-line-org-capture-turn-off-header-line))
 
@@ -932,7 +932,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
   (with-eval-after-load 'org-clock
     (add-hook 'org-clock-out-hook #'lambda-line-org-clock-out)))
 
-(defun lambda-line-org-clock-inactivate ()
+(defun lambda-line-org-clock-deactivate ()
   (remove-hook 'org-clock-out-hook
                #'lambda-line-org-clock-out))
 
@@ -976,7 +976,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
     (if (eq lambda-line-position 'top)
         (setq elfeed-search-header-function #'lambda-line-elfeed-setup-header))))
 
-(defun lambda-line-elfeed-search-inactivate ()
+(defun lambda-line-elfeed-search-deactivate ()
   (if (boundp 'elfeed-search-header-function)
       (setq elfeed-search-header-function #'elfeed-search--header)))
 
@@ -1115,7 +1115,7 @@ depending on the version of mu4e."
   (with-eval-after-load 'mu4e
     (advice-add 'mu4e~header-line-format :override #'lambda-line)))
 
-(defun lambda-line-mu4e-inactivate ()
+(defun lambda-line-mu4e-deactivate ()
   (advice-remove #'mu4e~header-line-format #'lambda-line))
 
 ;;;; Ein
@@ -1138,7 +1138,7 @@ depending on the version of mu4e."
     (if (eq lambda-line-position 'top)
         (setq ein:header-line-format '((:eval (lambda-line-ein-notebook-mode)))))))
 
-(defun lambda-line-ein-notebook-inactivate ()
+(defun lambda-line-ein-notebook-deactivate ()
   (if (boundp 'ein:header-line-format)
       (setq ein:header-line-format '(:eval (ein:header-line)))))
 
@@ -1166,7 +1166,7 @@ depending on the version of mu4e."
   (if (eq lambda-line-position 'top)
       (setq Buffer-menu-use-header-line nil)))
 
-(defun lambda-line-buffer-menu-inactivate ()
+(defun lambda-line-buffer-menu-deactivate ()
   (custom-reevaluate-setting 'Buffer-menu-use-header-line))
 
 ;;;; Elpher Mode
@@ -1199,7 +1199,7 @@ depending on the version of mu4e."
   (with-eval-after-load 'esh-mode
     (setq eshell-status-in-mode-line nil)))
 
-(defun lambda-line-esh-inactivate ()
+(defun lambda-line-esh-deactivate ()
   (custom-reevaluate-setting 'eshell-status-in-mode-line))
 
 ;;;; Ispell Mode
@@ -1216,7 +1216,7 @@ depending on the version of mu4e."
     (advice-add #'ispell-display-buffer :after
                 #'lambda-line-enlarge-ispell-choices-buffer)))
 
-(defun lambda-line-ispell-inactivate ()
+(defun lambda-line-ispell-deactivate ()
   (advice-remove #'ispell-display-buffer
                  #'lambda-line-enlarge-ispell-choices-buffer))
 
@@ -1325,10 +1325,10 @@ below or a buffer local variable 'no-mode-line'."
 
   (dolist (elt lambda-line-mode-formats)
     (let* ((config (cdr elt))
-           (fn (plist-get config :on-inactivate)))
+           (fn (plist-get config :on-deactivate)))
       (when fn (funcall fn))))
 
-  (run-hooks 'lambda-line-mode-format-inactivate-hook)
+  (run-hooks 'lambda-line-mode-format-deactivate-hook)
 
   (remove-hook 'post-command-hook
                #'lambda-line--update-selected-window)
