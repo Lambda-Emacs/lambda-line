@@ -161,6 +161,8 @@ of lambda-line-abbrev-alist"
                             :format lambda-line-text-mode)
     (messages-mode          :mode-p lambda-line-messages-mode-p
                             :format lambda-line-messages-mode)
+    (message-mode           :mode-p lambda-line-message-mode-p
+                            :format lambda-line-message-mode)
     (term-mode              :mode-p lambda-line-term-mode-p
                             :format lambda-line-term-mode)
     (vterm-mode             :mode-p lambda-line-vterm-mode-p
@@ -636,14 +638,13 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
 
 ;;;;; Info Display
 ;; ---------------------------------------------------------------------
-(setq Info-use-header-line nil)
 (defun lambda-line-info-breadcrumbs ()
   (let ((nodes (Info-toc-nodes Info-current-file))
         (cnode Info-current-node)
-	   (node Info-current-node)
+	    (node Info-current-node)
         (crumbs ())
         (depth Info-breadcrumbs-depth)
-	   line)
+	    line)
     (while  (> depth 0)
       (setq node (nth 1 (assoc node nodes)))
       (if node (push node crumbs))
@@ -653,13 +654,13 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
     (forward-line 1)
     (dolist (node crumbs)
       (let ((text
-	        (if (not (equal node "Top")) node
-	          (format "%s"
-		              (if (stringp Info-current-file)
+	         (if (not (equal node "Top")) node
+	           (format "%s"
+		               (if (stringp Info-current-file)
 			               (file-name-sans-extension
 			                (file-name-nondirectory Info-current-file))
 			             Info-current-file)))))
-	   (setq line (concat line (if (null line) "" " > ")
+	    (setq line (concat line (if (null line) "" " > ")
                            (if (null node) "..." text)))))
     (if (and cnode (not (equal cnode "Top")))
         (setq line (concat line (if (null line) "" " > ") cnode)))
@@ -669,8 +670,8 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
   (derived-mode-p 'Info-mode))
 
 (defun lambda-line-info-mode ()
-  (lambda-line-compose nil
-                       "Info"
+  (lambda-line-compose ""
+                       "INFO"
                        (concat "("
                                (lambda-line-info-breadcrumbs)
                                ")")
@@ -716,15 +717,23 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                        nil
                        (lambda-line-shorten-directory (car (last (split-string default-directory ":"))) 32)))
 
-;;;; Message Mode
+;;;; Messages Buffer Mode
 ;; ---------------------------------------------------------------------
 (defun lambda-line-messages-mode-p ()
   (derived-mode-p 'messages-buffer-mode))
 
 (defun lambda-line-messages-mode ()
   (lambda-line-compose (lambda-line-status)
-                       "Message" "(draft)" nil ""))
+                       "Messages" "" nil ""))
 
+;;;; Message Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-message-mode-p ()
+  (derived-mode-p 'message-mode))
+
+(defun lambda-line-message-mode ()
+  (lambda-line-compose (lambda-line-status)
+                       "Message" "(Draft)" nil ""))
 
 ;;;; Docview Mode
 ;;---------------------------------------------------------------------
