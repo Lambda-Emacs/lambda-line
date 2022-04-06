@@ -597,12 +597,36 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
             (propertize (make-string available-width ?\ )
                         'face (if active 'lambda-line-active
                                 'lambda-line-inactive))
-            (propertize right 'face (if active 'lambda-line-active-secondary
-                                      'lambda-line-inactive-secondary)))))
+            right)))
 
 ;;;; Default display
 
 (defun lambda-line-default-mode ()
+(let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
+      (mode-name   (lambda-line-mode-name))
+      (branch      (lambda-line-vc-project-branch))
+      (position    (format-mode-line "%l:%c:%o")))
+  (lambda-line-compose (lambda-line-status)
+                       (lambda-line-truncate buffer-name lambda-line-truncate-value)
+                       (concat "(" mode-name
+                               (when branch
+                                 branch)
+                               ")")
+                       nil
+                       (concat
+                        ;; Narrowed buffer
+                        (when (buffer-narrowed-p)
+                          (propertize "⇥ "  'face `(:inherit fringe)))
+                        position))))
+
+
+;;;; Mode Functions
+;;;;; Prog Mode
+;; ---------------------------------------------------------------------
+(defun lambda-line-prog-mode-p ()
+  (derived-mode-p 'prog-mode))
+
+(defun lambda-line-prog-mode ()
   (let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
         (mode-name   (lambda-line-mode-name))
         (branch      (lambda-line-vc-project-branch))
