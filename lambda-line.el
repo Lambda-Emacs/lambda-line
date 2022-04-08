@@ -549,7 +549,7 @@ the mode-line (if available)."
 ;;;;; Mode line status
 ;; ---------------------------------------------------------------------
 (defun lambda-line-status ()
-  "Return buffer status: default symbols are read-only (◯◯)/(RO),
+  "Return buffer status: default symbols are read-only (◯⨂)/(RO),
 modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
   (let ((read-only   buffer-read-only)
         (modified    (and buffer-file-name (buffer-modified-p))))
@@ -576,48 +576,55 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
   (let* ((char-width    (window-font-width nil 'header-line))
          (window        (get-buffer-window (current-buffer)))
          (active        (eq window lambda-line--selected-window))
+         (read-only     buffer-read-only)
+         (modified      (and buffer-file-name (buffer-modified-p)))
+         (read-write    (not (or (buffer-modified-p) buffer-read-only)))
          (prefix (if (display-graphic-p)
-                     (cond ((string= status lambda-line-gui-ro-symbol)
+                     (cond (read-only
                             (propertize (if (window-dedicated-p)" –– " lambda-line-gui-ro-symbol)
                                         'face (if active
                                                   'lambda-line-active-status-RO
                                                 'lambda-line-inactive-status-RO)
                                         'display `(raise ,lambda-line-symbol-position)))
-                           ((string= status lambda-line-gui-mod-symbol)
+                           (modified
                             (propertize (if (window-dedicated-p)" –– " lambda-line-gui-mod-symbol)
                                         'face (if active
                                                   'lambda-line-active-status-**
                                                 'lambda-line-inactive-status-**)
                                         'display `(raise ,lambda-line-symbol-position)))
-                           ((string= status lambda-line-gui-rw-symbol)
+                           (read-write
                             (propertize (if (window-dedicated-p) " –– " lambda-line-gui-rw-symbol)
-                                        'face (if active 'lambda-line-active-status-RW
+                                        'face (if active
+                                                  'lambda-line-active-status-RW
                                                 'lambda-line-inactive-status-RW)
                                         'display `(raise ,lambda-line-symbol-position)))
                            (t (propertize status
-                                          'face (if active 'lambda-line-active-status-**
+                                          'face (if active
+                                                    'lambda-line-active-status-**
                                                   'lambda-line-inactive-status-**)
                                           'display `(raise ,lambda-line-symbol-position))))
                    ;; TTY displays
-                   (cond ((string= status lambda-line-tty-ro-symbol)
+                   (cond (read-only
                           (propertize
                            (if (window-dedicated-p) " -- " lambda-line-tty-ro-symbol)
                            'face (if active
                                      'lambda-line-active-status-RO
                                    'lambda-line-inactive-status-RO)))
-                         ((string= status lambda-line-tty-mod-symbol)
+                         (modified
                           (propertize
-                           (if (window-dedicated-p) " -- " lambda-line-tt-mod-symbol)
+                           (if (window-dedicated-p) " -- " lambda-line-tty-mod-symbol)
                            'face (if active
                                      'lambda-line-active-status-**
                                    'lambda-line-inactive-status-**)))
-                         ((string= status lambda-line-tty-rw-symbol)
+                         (read-write
                           (propertize
                            (if (window-dedicated-p) " -- " lambda-line-tty-rw-symbol)
-                           'face (if active 'lambda-line-active-status-RW
+                           'face (if active
+                                     'lambda-line-active-status-RW
                                    'lambda-line-inactive-status-RW)))
                          (t (propertize status
-                                        'face (if active 'lambda-line-active-status-**
+                                        'face (if active
+                                                  'lambda-line-active-status-**
                                                 'lambda-line-inactive-status-**))))))
 
          (left (concat
