@@ -145,7 +145,7 @@ of lambda-line-abbrev-alist"
   :type 'float
   :group 'lambda-line)
 
-(defcustom lambda-line-symbol-position .065
+(defcustom lambda-line-symbol-position .067
   "Space adjustment for bottom of modeline
  Negative is downwards."
   :type 'float
@@ -657,22 +657,24 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
 ;;;; Default display
 
 (defun lambda-line-default-mode ()
-(let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
-      (mode-name   (lambda-line-mode-name))
-      (branch      (lambda-line-vc-project-branch))
-      (position    (format-mode-line "%l:%c:%o")))
-  (lambda-line-compose (lambda-line-status)
-                       (lambda-line-truncate buffer-name lambda-line-truncate-value)
-                       (concat "(" mode-name
-                               (when branch
-                                 branch)
-                               ")")
-                       nil
-                       (concat
-                        ;; Narrowed buffer
-                        (when (buffer-narrowed-p)
-                          (propertize "⇥ "  'face `(:inherit fringe)))
-                        position))))
+  (let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
+        (mode-name   (lambda-line-mode-name))
+        (branch      (lambda-line-vc-project-branch))
+        (position    (format-mode-line "%l:%c:%o")))
+    (lambda-line-compose (lambda-line-status)
+                         (lambda-line-truncate buffer-name lambda-line-truncate-value)
+                         (concat "(" mode-name
+                                 (when branch
+                                   branch)
+                                 ")")
+                         nil
+                         (concat
+                          ;; Narrowed buffer
+                          (if (buffer-narrowed-p)
+                              (concat
+                               (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary))
+                               position " ")
+                            position)))))
 
 
 ;;;; Mode Functions
@@ -696,7 +698,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                          (concat
                           ;; Narrowed buffer
                           (when (buffer-narrowed-p)
-                            (propertize "⇥ "  'face `(:inherit fringe)))
+                            (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary)))
                           (if (or (boundp 'flycheck-mode)
                                   (boundp 'flymake-mode))
                               (concat position " ")
@@ -810,7 +812,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
 
 (defun lambda-line-messages-mode ()
   (lambda-line-compose (lambda-line-status)
-                       "Messages" "" nil ""))
+                       "*Messages*" "" nil ""))
 
 ;;;; Message Mode
 ;; ---------------------------------------------------------------------
@@ -900,7 +902,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
 ;;;; Deft Mode
 
 (with-eval-after-load 'deft
-  (defun deft-print-header ()
+  (defun lambda-line--deft-print-header ()
     (force-mode-line-update)
     (widget-insert "\n")))
 
@@ -979,7 +981,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                        ""
                        nil
                        (concat (propertize "◴"
-                                           'face 'default
+                                           'face 'lambda-line-active-secondary
                                            'display '(raise 0.06))
                                (format-time-string "%H:%M "))))
 
@@ -1003,7 +1005,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                          (concat
                           ;; Narrowed buffer
                           (when (buffer-narrowed-p)
-                            (propertize "⇥ "  'face `(:inherit fringe)))
+                            (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary)))
                           org-mode-line-string
                           " "
                           nil
