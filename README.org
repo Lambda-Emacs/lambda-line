@@ -1,7 +1,6 @@
 
-Lambda-line is a custom status-line for Emacs. It is configurable for use either
-as a header-line or as a footer-line (i.e. what is called the "mode-line" for
-Emacs).
+Lambda-line is a custom status-line (or "mode-line) for Emacs. It is
+configurable for use either as a header-line or as a footer-line.
 
 The status-line has the structure:
 
@@ -18,6 +17,7 @@ Information displayed depends on major mode. Not all segments display in every m
 #+ATTR_HTML: :width 85%
 [[file:screenshots/read-only-light.png]]
 
+For this coloration of the status-line see [[https://github.com/Lambda-Emacs/lambda-themes][lambda-themes]].
 
 * Installation
 
