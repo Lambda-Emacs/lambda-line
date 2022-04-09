@@ -9,6 +9,16 @@ The status-line has the structure:
 
 Information displayed depends on major mode. Not all segments display in every mode. 
 
+#+ATTR_HTML: :width 85%
+[[file:screenshots/read-write-dark.png]]
+#+ATTR_HTML: :width 85%
+[[file:screenshots/read-only-dark.png]]
+#+ATTR_HTML: :width 85%
+[[file:screenshots/read-write-light.png]]
+#+ATTR_HTML: :width 85%
+[[file:screenshots/read-only-light.png]]
+
+
 * Installation
 
 This package is not yet on MELPA. In the meantime to use this package you'll
@@ -32,13 +42,25 @@ Lambda-line has a lot of different options for customization. Please see
 
 - Set =lambda-line-position= to header (top) or footer (bottom).
 - Use a prefix status icon in the status-line with =lambda-line-prefix t=.
-- Abbreviate major modes with =lambda-line-abbrev=.
-- Show the diff in the status-line with =lambda-line-git-diff-mode-line=.
-- Set the symbol for vc project buffers with =lambda-line-vc-symbol ""=.
-- Set a visual bell with =lambda-line-visual-bell=.
 - Customize the various prefix status symbols in both GUI and TTY with
-  =lambda-line-GUI/TTY-RO/RW/MD-symbol=.  
-- Set char length for truncating symbols using =lambda-line-truncate-value=. 
+  =lambda-line-GUI/TTY-RO/RW/MD-symbol=.
+   + *NOTE*: If you use symbols you should make sure you are using a font that
+        will display them properly. Here is one reliable way, using [[https://fontlibrary.org/en/font/symbola][Symbola]] font:
+        #+begin_src emacs-lisp
+          (use-package fontset
+            :straight (:type built-in) ;; only include this if you use straight
+            :config
+            ;; Use symbola for proper unicode
+            (when (member "Symbola" (font-family-list))
+              (set-fontset-font
+               t 'symbol "Symbola" nil)))
+        #+end_src
+- Abbreviate major modes with =lambda-line-abbrev=.
+- Show both vc project and branch in the modeline
+- Show the diff in the status-line with =lambda-line-git-diff-mode-line=.
+- Set the symbol for vc project buffers with =lambda-line-vc-symbol=.
+- Set a visual bell with =lambda-line-visual-bell=.
+- Set char length for truncating information using =lambda-line-truncate-value=. 
 - Control the right margin padding with =lambda-line-hspace=. 
 - Set the top and bottom padding of the status-line with =lambda-line-space-top=.
   and =lambda-line-space-bottom=.
@@ -52,3 +74,9 @@ Lambda-line has a lot of different options for customization. Please see
 
   
 Lambda-line also sets a variety of faces that can be individually customized. 
+
+* Acknowledgments
+
+- The basic structure of the status line is heavily indebted to Rougier's work
+  on [[https://github.com/rougier/nano-modeline][nano-modeline]].
+- The idea for the flycheck segment function is from [[https://github.com/jessiehildebrandt/mood-line][mood-line]]. 
