@@ -23,7 +23,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 ;;; Commentary:
 
 ;; lambda-line is a minimal, though opinionated, status-line (i.e. in Emacs the
@@ -64,6 +63,11 @@ displayed. It can be an integer or a float number. `nil' means no limit."
           (const :tag "Bottom" bottom))
   :group 'lambda-line)
 
+(defcustom lambda-line-prefix t
+  "Include a prefix icon to indicate buffer status in the status-line."
+  :type 'boolean
+  :group 'lambda-line)
+
 (defcustom lambda-line-user-mode nil
   "User supplied mode to be evaluated for modeline."
   :type '(choice (const nil) function)
@@ -93,32 +97,32 @@ of lambda-line-abbrev-alist"
   :type 'boolean)
 
 ;; Mode line symbols
-(defcustom lambda-line-gui-ro-symbol " ⬤◯"  ;;  ⬤◯⨂
+(defcustom lambda-line-gui-ro-symbol " ⬤"  ;;  ⬤◯⨂
   "Modeline gui read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-gui-mod-symbol " ◯⬤" ;;  ⨀⬤
+(defcustom lambda-line-gui-mod-symbol " ⬤" ;;  ⨀⬤
   "Modeline gui modified symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-gui-rw-symbol " ◯◯" ; ◉ ◎ ⬤◯
+(defcustom lambda-line-gui-rw-symbol " ⬤" ; ◉ ◎ ⬤◯
   "Modeline gui read-write symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-ro-symbol " RO "
+(defcustom lambda-line-tty-ro-symbol " *"
   "Modeline tty read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-mod-symbol " ** "
+(defcustom lambda-line-tty-mod-symbol " *"
   "Modeline tty modified symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-rw-symbol " RW "
+(defcustom lambda-line-tty-rw-symbol " *"
   "Modeline tty read-write symbol."
   :group 'lambda-line
   :type 'string)
@@ -149,6 +153,11 @@ of lambda-line-abbrev-alist"
   "Space adjustment for bottom of modeline
  Negative is downwards."
   :type 'float
+  :group 'lambda-line)
+
+(defcustom lambda-line-syntax t
+  "Show flycheck/flymake report in status-line."
+  :type 'boolean
   :group 'lambda-line)
 
 (defcustom lambda-line-mode-formats
@@ -313,7 +322,7 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 
 ;;;;; Status Bar Faces
 
-;; lambda-line uses a colored symbol to indicate the status of the buffer, as well as style the buffer to be slightly vertically larger than the rest of the display faces.
+;; lambda-line uses a colored symbol to indicate the status of the buffer
 
 (defface lambda-line-active-status-RO
   '((t (:inherit (warning))))
@@ -335,12 +344,12 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   "Modeline face for inactive READ-WRITE element"
   :group 'lambda-line-inactive)
 
-(defface lambda-line-active-status-**
+(defface lambda-line-active-status-MD
   '((t (:inherit (error))))
   "Modeline face for active MODIFIED element"
   :group 'lambda-line-active)
 
-(defface lambda-line-inactive-status-**
+(defface lambda-line-inactive-status-MD
   '((t (:inherit (mode-line-inactive) :foreground "light gray")))
   "Modeline face for inactive MODIFIED element"
   :group 'lambda-line-inactive)
@@ -528,10 +537,10 @@ want to use in the modeline *as substitute for* the original."
                                          'face (if .error
                                                    'error
                                                  'warning))))
-                       (propertize "✔ Good  " 'face 'success)))
-          ('running (propertize "Δ Checking  " 'face 'info))
-          ('errored (propertize "✖ Error  " 'face 'error))
-          ('interrupted (propertize "⏸ Paused  " 'face 'lambda-line-inactive))
+                       (propertize "✔ Good " 'face 'success)))
+          ('running (propertize "Δ Checking " 'face 'info))
+          ('errored (propertize "✖ Error " 'face 'error))
+          ('interrupted (propertize "⏸ Paused " 'face 'lambda-line-inactive))
           ('no-checker ""))))
 
 (defun lambda-line-check-syntax ()
@@ -549,8 +558,9 @@ the mode-line (if available)."
 ;;;;; Mode line status
 ;; ---------------------------------------------------------------------
 (defun lambda-line-status ()
-  "Return buffer status: default symbols are read-only (◯⨂)/(RO),
-modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
+  "Return buffer status.
+Default symbols are set for both GUI (using UTF-8 symbols) and
+tty (using regular ASCII characters)."
   (let ((read-only   buffer-read-only)
         (modified    (and buffer-file-name (buffer-modified-p))))
     ;; Use status letters for TTY display
@@ -589,8 +599,8 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                            (modified
                             (propertize (if (window-dedicated-p)" –– " lambda-line-gui-mod-symbol)
                                         'face (if active
-                                                  'lambda-line-active-status-**
-                                                'lambda-line-inactive-status-**)
+                                                  'lambda-line-active-status-MD
+                                                'lambda-line-inactive-status-MD)
                                         'display `(raise ,lambda-line-symbol-position)))
                            (read-write
                             (propertize (if (window-dedicated-p) " –– " lambda-line-gui-rw-symbol)
@@ -598,11 +608,12 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                                                   'lambda-line-active-status-RW
                                                 'lambda-line-inactive-status-RW)
                                         'display `(raise ,lambda-line-symbol-position)))
-                           (t (propertize status
-                                          'face (if active
-                                                    'lambda-line-active-status-**
-                                                  'lambda-line-inactive-status-**)
-                                          'display `(raise ,lambda-line-symbol-position))))
+                           (t
+                            (propertize status
+                                        'face (if active
+                                                  'lambda-line-active-status-MD
+                                                'lambda-line-inactive-status-MD)
+                                        'display `(raise ,lambda-line-symbol-position))))
                    ;; TTY displays
                    (cond (read-only
                           (propertize
@@ -614,18 +625,19 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                           (propertize
                            (if (window-dedicated-p) " -- " lambda-line-tty-mod-symbol)
                            'face (if active
-                                     'lambda-line-active-status-**
-                                   'lambda-line-inactive-status-**)))
+                                     'lambda-line-active-status-MD
+                                   'lambda-line-inactive-status-MD)))
                          (read-write
                           (propertize
                            (if (window-dedicated-p) " -- " lambda-line-tty-rw-symbol)
                            'face (if active
                                      'lambda-line-active-status-RW
                                    'lambda-line-inactive-status-RW)))
-                         (t (propertize status
-                                        'face (if active
-                                                  'lambda-line-active-status-**
-                                                'lambda-line-inactive-status-**))))))
+                         (t
+                          (propertize status
+                                      'face (if active
+                                                'lambda-line-active-status-MD
+                                              'lambda-line-inactive-status-MD))))))
 
          (left (concat
                 ;; add invisible char for extra vertical padding
@@ -647,7 +659,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                              (length prefix) (length left) (length right)
                              (/ (window-right-divider-width) char-width)))
          (available-width (max 1 available-width)))
-    (concat prefix
+    (concat (if lambda-line-prefix prefix nil)
             left
             (propertize (make-string available-width ?\ )
                         'face (if active 'lambda-line-active
@@ -699,9 +711,11 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                           ;; Narrowed buffer
                           (when (buffer-narrowed-p)
                             (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary)))
-                          (if (or (boundp 'flycheck-mode)
-                                  (boundp 'flymake-mode))
-                              (concat position " ")
+                          (if lambda-line-syntax
+                              (if (or (boundp 'flycheck-mode)
+                                      (boundp 'flymake-mode))
+                                  (concat position lambda-line-hspace)
+                                position)
                             position)))))
 
 (defun lambda-line-prog-activate ()
@@ -880,10 +894,10 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
 (defun lambda-line-buffer-menu-mode ()
   (let ((buffer-name "Buffer list")
         (mode-name   (lambda-line-mode-name))
-        (position    (format-mode-line "%l:%c:%o ")))
+        (position    (format-mode-line "%l:%c:%o")))
 
     (lambda-line-compose (lambda-line-status)
-                         buffer-name "" nil position)))
+                         buffer-name "" nil (concat position lambda-line-hspace))))
 
 
 ;;;; Completion
@@ -894,10 +908,10 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
 (defun lambda-line-completion-list-mode ()
   (let ((buffer-name (format-mode-line "%b"))
         (mode-name   (lambda-line-mode-name))
-        (position    (format-mode-line "%l:%c:%o ")))
+        (position    (format-mode-line "%l:%c:%o")))
 
     (lambda-line-compose (lambda-line-status)
-                         buffer-name "" nil position)))
+                         buffer-name "" nil (concat position lambda-line-hspace))))
 
 ;;;; Deft Mode
 
@@ -1010,7 +1024,7 @@ modified (⬤⬤)/(**), or read-write ((◯⬤)/(RW)"
                           " "
                           nil
                           position
-                          " "))))
+                          lambda-line-hspace))))
 
 (defun lambda-line-org-clock-out ()
   (setq org-mode-line-string nil)
@@ -1210,7 +1224,7 @@ depending on the version of mu4e."
 
 (defun lambda-line-ein-notebook-mode ()
   (let ((buffer-name (format-mode-line "%b")))
-    (lambda-line-compose (if (ein:notebook-modified-p) "**" "RW")
+    (lambda-line-compose (if (ein:notebook-modified-p) "MD" "RW")
                          buffer-name
                          ""
                          nil

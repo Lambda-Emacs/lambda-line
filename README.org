@@ -1,3 +1,54 @@
 
 Lambda-line is a custom status-line for Emacs. It is configurable for use either
-as a header-line or as a footer-line (the default "mode-line" for Emacs).  
+as a header-line or as a footer-line (i.e. what is called the "mode-line" for
+Emacs).
+
+The status-line has the structure:
+
+[ status name (primary) tertiary secondary ]
+
+Information displayed depends on major mode. Not all segments display in every mode. 
+
+* Installation
+
+This package is not yet on MELPA. In the meantime to use this package you'll
+have to clone or otherwise download the repo and put it into your load path.
+Here's a basic way of setting it up using [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/raxod502/straight.el][straight]].
+
+#+begin_src emacs-lisp
+  (use-package lambda-line
+    :straight (:type git :host github :repo "lambda-emacs/lambda-line") 
+    :custom
+    ;; Set position of status-line 
+    (lambda-line-position 'top)
+    :config
+    (lambda-line-mode))
+#+end_src
+
+* Options
+
+Lambda-line has a lot of different options for customization. Please see
+=M-x customize-group lambda-line= for full details.
+
+- Set =lambda-line-position= to header (top) or footer (bottom).
+- Use a prefix status icon in the status-line with =lambda-line-prefix t=.
+- Abbreviate major modes with =lambda-line-abbrev=.
+- Show the diff in the status-line with =lambda-line-git-diff-mode-line=.
+- Set the symbol for vc project buffers with =lambda-line-vc-symbol ""=.
+- Set a visual bell with =lambda-line-visual-bell=.
+- Customize the various prefix status symbols in both GUI and TTY with
+  =lambda-line-GUI/TTY-RO/RW/MD-symbol=.  
+- Set char length for truncating symbols using =lambda-line-truncate-value=. 
+- Control the right margin padding with =lambda-line-hspace=. 
+- Set the top and bottom padding of the status-line with =lambda-line-space-top=.
+  and =lambda-line-space-bottom=.
+- Set the position of the prefix status symbol with =lambda-line-symbol-position=.
+- Show flycheck/flymake report in status-line with =lambda-line-syntax=.
+- Set the modes in which the status-line is formatted with
+  =lambda-line-mode-formats=. 
+- Set the default display function for the status-line with
+  =lambda-line-default-mode-format=. This is set to =lambda-line-default-mode= but
+  can be customized to any function the user wishes.
+
+  
+Lambda-line also sets a variety of faces that can be individually customized. 
