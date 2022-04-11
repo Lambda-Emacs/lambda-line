@@ -17,11 +17,11 @@ Information displayed depends on major mode. Not all segments display in every m
 #+ATTR_HTML: :width 85%
 [[file:screenshots/read-only-light.png]]
 
-For this coloration of the status-line see [[https://github.com/Lambda-Emacs/lambda-themes][lambda-themes]].
+To achieve the above coloration of the status-line see [[https://github.com/Lambda-Emacs/lambda-themes][lambda-themes]].
 
 * Installation
 
-This package is not yet on MELPA. In the meantime to use this package you'll
+Lambda-line is not yet on MELPA. In the meantime to use this package you'll
 have to clone or otherwise download the repo and put it into your load path.
 Here's a basic way of setting it up using [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/raxod502/straight.el][straight]].
 

@@ -273,12 +273,12 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 
 (defface lambda-line-active
   '((t (:inherit (mode-line))))
-  "Modeline face for active modeline"
+  "Modeline face for active modeline."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive
   '((t (:inherit (mode-line-inactive))))
-  "Modeline face for inactive window"
+  "Modeline face for inactive line."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-vspace-active
@@ -291,32 +291,42 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 
 (defface lambda-line-active-name
   '((t (:inherit (mode-line))))
-  "Modeline face for active name element"
+  "Modeline face for active name element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-name
   '((t (:inherit (mode-line-inactive))))
-  "Modeline face for inactive name element"
+  "Modeline face for inactive name element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-primary
   '((t (:weight light :inherit (mode-line))))
-  "Modeline face for active primary element"
+  "Modeline face for active primary element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-primary
   '((t (:inherit (mode-line-inactive))))
-  "Modeline face for inactive primary element"
+  "Modeline face for inactive primary element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-secondary
   '((t (:inherit mode-line)))
-  "Modeline face for active secondary element"
+  "Modeline face for active secondary element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-secondary
   '((t (:inherit (mode-line-inactive))))
-  "Modeline face for inactive primary element"
+  "Modeline face for inactive secondary element."
+  :group 'lambda-line-inactive)
+
+(defface lambda-line-active-tertiary
+  '((t (:inherit mode-line)))
+  "Modeline face for active tertiary element."
+  :group 'lambda-line-active)
+
+(defface lambda-line-inactive-tertiary
+  '((t (:inherit (mode-line-inactive))))
+  "Modeline face for inactive tertiary element."
   :group 'lambda-line-inactive)
 
 
@@ -326,32 +336,32 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
 
 (defface lambda-line-active-status-RO
   '((t (:inherit (warning))))
-  "Modeline face for active READ-ONLY element"
+  "Modeline face for active READ-ONLY element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-RO
   '((t (:inherit (mode-line-inactive) :foreground "light gray")))
-  "Modeline face for inactive READ-ONLY element"
+  "Modeline face for inactive READ-ONLY element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-RW
   '((t (:inherit (success))))
-  "Modeline face for active READ-WRITE element"
+  "Modeline face for active READ-WRITE element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-RW
   '((t (:inherit (mode-line-inactive) :foreground "light gray")))
-  "Modeline face for inactive READ-WRITE element"
+  "Modeline face for inactive READ-WRITE element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-MD
   '((t (:inherit (error))))
-  "Modeline face for active MODIFIED element"
+  "Modeline face for active MODIFIED element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-MD
   '((t (:inherit (mode-line-inactive) :foreground "light gray")))
-  "Modeline face for inactive MODIFIED element"
+  "Modeline face for inactive MODIFIED element."
   :group 'lambda-line-inactive)
 
 
@@ -427,21 +437,13 @@ want to use in the modeline *as substitute for* the original."
 (when lambda-line-abbrev
   (add-hook 'after-change-major-mode-hook #'lambda-line--abbrev))
 
-;;;;; Base Functions
+;;;;; Mode Name
 (defun lambda-line-user-mode-p ()
   "Should the user supplied mode be called for modeline?"
   lambda-line-user-mode)
 
-(defun lambda-line-truncate (str size &optional ellipsis)
-  "If STR is longer than SIZE, truncate it and add ELLIPSIS."
-
-  (let ((ellipsis (or ellipsis "…")))
-    (if (> (length str) size)
-        (format "%s%s" (substring str 0 (- size (length ellipsis))) ellipsis)
-      str)))
-
 (defun lambda-line-mode-name ()
-  "Return current major mode name"
+  "Return current major mode name."
   (format-mode-line mode-name))
 
 ;;;;; String Trim
@@ -461,14 +463,23 @@ want to use in the modeline *as substitute for* the original."
   "Remove whitespace at the beginning and end of STRING."
   (lambda-line--string-trim-left (lambda-line--string-trim-right string)))
 
+(defun lambda-line-truncate (str size &optional ellipsis)
+  "If STR is longer than SIZE, truncate it and add ELLIPSIS."
+
+  (let ((ellipsis (or ellipsis "…")))
+    (if (> (length str) size)
+        (format "%s%s" (substring str 0 (- size (length ellipsis))) ellipsis)
+      str)))
+
 ;;;;; Branch display
 ;; -------------------------------------------------------------------
 (defun lambda-line-project-name ()
-  "return name of project without path"
+  "Return name of project without path."
   (file-name-nondirectory (directory-file-name (if (vc-root-dir) (vc-root-dir) "-"))))
 
 (defun lambda-line-vc-project-branch ()
-  "If buffer is visiting a file under version control, show project and branch name for file. Otherwise show '-'"
+  "Show project and branch name for file.
+Otherwise show '-'."
   (let ((backend (vc-backend buffer-file-name)))
     (concat
      (if buffer-file-name
@@ -487,6 +498,21 @@ want to use in the modeline *as substitute for* the original."
           lambda-line-vc-symbol (substring-no-properties vc-mode ;    
                                                          (+ (if (eq backend 'Hg) 2 3) 2)))  nil))))
 
+;;;;; Dir display
+;; From https://amitp.blogspot.com/2011/08/emacs-custom-mode-line.html
+(defun lambda-line-shorten-directory (dir max-length)
+  "Show up to `max-length' characters of a directory name `dir'."
+  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
+        (output ""))
+    (when (and path (equal "" (car path)))
+      (setq path (cdr path)))
+    (while (and path (< (length output) (- max-length 4)))
+      (setq output (concat (car path) "/" output))
+      (setq path (cdr path)))
+    (when path
+      (setq output (concat "…/" output)))
+    output))
+
 ;;;;; Git diff in modeline
 ;; https://cocktailmake.github.io/posts/emacs-modeline-enhancement-for-git-diff/
 (when lambda-line-git-diff-mode-line
@@ -504,24 +530,6 @@ want to use in the modeline *as substitute for* the original."
 			             (format "-%s" (match-string 2 plus-minus)))
 		              (propertize "" 'face '(:weight bold))))))))
 
-;;;;; Dir display
-
-
-;; From https://amitp.blogspot.com/2011/08/emacs-custom-mode-line.html
-(defun lambda-line-shorten-directory (dir max-length)
-  "Show up to `max-length' characters of a directory name `dir'."
-  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
-        (output ""))
-    (when (and path (equal "" (car path)))
-      (setq path (cdr path)))
-    (while (and path (< (length output) (- max-length 4)))
-      (setq output (concat (car path) "/" output))
-      (setq path (cdr path)))
-    (when path
-      (setq output (concat "…/" output)))
-    output))
-
-
 ;;;;; Flycheck/Flymake Segment
 (defvar-local lambda-line--flycheck-text nil)
 (defun lambda-line--update-flycheck-segment (&optional status)
@@ -531,16 +539,16 @@ want to use in the modeline *as substitute for* the original."
           ('finished (if flycheck-current-errors
                          (let-alist (flycheck-count-errors flycheck-current-errors)
                            (let ((sum (+ (or .error 0) (or .warning 0))))
-                             (propertize (concat "⚑ Issues: "
+                             (propertize (concat "Issues: "
                                                  (number-to-string sum)
-                                                 "  ")
+                                                 " ")
                                          'face (if .error
                                                    'error
                                                  'warning))))
-                       (propertize "✔ Good " 'face 'success)))
-          ('running (propertize "Δ Checking " 'face 'info))
-          ('errored (propertize "✖ Error " 'face 'error))
-          ('interrupted (propertize "⏸ Paused " 'face 'lambda-line-inactive))
+                       (propertize "Good " 'face 'success)))
+          ('running (propertize "Checking " 'face 'info))
+          ('errored (propertize "Error " 'face 'error))
+          ('interrupted (propertize "Paused " 'face 'lambda-line-inactive))
           ('no-checker ""))))
 
 (defun lambda-line-check-syntax ()
@@ -551,7 +559,6 @@ the mode-line (if available)."
                                          flymake--mode-line-format)) " ") lambda-line--flycheck-text))
 
 ;;;;; Vertical Spacer
-
 (defvar lambda-line-vspace "⁣"
   "Use an invisible character to generate vertical space (i.e. padding) in the status-line.")
 
@@ -577,12 +584,10 @@ tty (using regular ASCII characters)."
             lambda-line-gui-rw-symbol
           lambda-line-tty-rw-symbol)))))
 
-
 ;;;; Compose mode line
 ;; -------------------------------------------------------------------
-
 (defun lambda-line-compose (status name primary tertiary secondary)
-  "Compose a string with provided information"
+  "Compose a string with provided information."
   (let* ((char-width    (window-font-width nil 'header-line))
          (window        (get-buffer-window (current-buffer)))
          (active        (eq window lambda-line--selected-window))
@@ -667,8 +672,8 @@ tty (using regular ASCII characters)."
             right)))
 
 ;;;; Default display
-
 (defun lambda-line-default-mode ()
+  "Compose the default status line."
   (let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
         (mode-name   (lambda-line-mode-name))
         (branch      (lambda-line-vc-project-branch))
@@ -687,7 +692,6 @@ tty (using regular ASCII characters)."
                                (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary))
                                position " ")
                             position)))))
-
 
 ;;;; Mode Functions
 ;;;;; Prog Mode
@@ -1364,7 +1368,6 @@ depending on the version of mu4e."
         (setq mode-line-format format)
         (setq-default mode-line-format format)))))
 
-
 (defun lambda-line-update-windows ()
   "Hide the mode line depending on the presence of a window
 below or a buffer local variable 'no-mode-line'."
@@ -1377,8 +1380,6 @@ below or a buffer local variable 'no-mode-line'."
                         ((eq (window-in-direction 'below) (minibuffer-window)) (list ""))
                         ((not (window-in-direction 'below)) (list ""))
                         (t nil))))))))
-
-
 
 (defun lambda-line-mode--activate ()
   "Activate lambda-line."
