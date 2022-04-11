@@ -66,6 +66,12 @@ Lambda-line has a lot of different options for customization. Please see
   and =lambda-line-space-bottom=.
 - Set the position of the prefix status symbol with =lambda-line-symbol-position=.
 - Show flycheck/flymake report in status-line with =lambda-line-syntax=.
+   + If you use flymake, you might want to configure the status-line display with
+     the following, which provides a minimalist display:
+#+begin_src emacs-lisp
+(customize-set-variable 'flymake-mode-line-counter-format '("" flymake-mode-line-error-counter flymake-mode-line-warning-counter flymake-mode-line-note-counter ""))
+(customize-set-variable 'flymake-mode-line-format '(" " flymake-mode-line-exception flymake-mode-line-counters))
+#+end_src
 - Set the modes in which the status-line is formatted with
   =lambda-line-mode-formats=. 
 - Set the default display function for the status-line with
@@ -79,4 +85,6 @@ Lambda-line also sets a variety of faces that can be individually customized.
 
 - The basic structure of the status line is heavily indebted to Rougier's work
   on [[https://github.com/rougier/nano-modeline][nano-modeline]].
-- The idea for the flycheck segment function is from [[https://github.com/jessiehildebrandt/mood-line][mood-line]]. 
+- My [[https://github.com/mclear-tools/bespoke-modeline][bespoke-modeline]] was my first attempt to create a custom mode-line and the
+  original basis for much of the current code.
+- The idea for the flycheck/flymake segment function is originally from [[https://github.com/jessiehildebrandt/mood-line][mood-line]]. 
