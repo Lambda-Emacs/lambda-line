@@ -107,22 +107,22 @@ of lambda-line-abbrev-alist"
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-gui-rw-symbol " ◯" ; ◉ ◎ ⬤◯
+(defcustom lambda-line-gui-rw-symbol " ◯" ; λ ◉ ◎ ⬤◯
   "Modeline gui read-write symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-ro-symbol " *"
+(defcustom lambda-line-tty-ro-symbol " 𝛌"
   "Modeline tty read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-mod-symbol " *"
-  "Modeline tty modified symbol."
+(defcustom lambda-line-tty-mod-symbol "  𝛌"
+  "Modeline tty read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-rw-symbol " *"
+(defcustom lambda-line-tty-rw-symbol " 𝛌"
   "Modeline tty read-write symbol."
   :group 'lambda-line
   :type 'string)
