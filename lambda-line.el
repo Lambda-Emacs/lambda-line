@@ -556,7 +556,8 @@ Otherwise show '-'."
 the mode-line (if available)."
   (if (and (boundp 'flymake-mode) flymake-mode)
       (concat (lambda-line--string-trim (format-mode-line
-                                         flymake--mode-line-format)) " ") lambda-line--flycheck-text))
+                                         flymake-mode-line-format)) " ")
+    lambda-line--flycheck-text))
 
 ;;;;; Vertical Spacer
 (defvar lambda-line-vspace "⁣"
