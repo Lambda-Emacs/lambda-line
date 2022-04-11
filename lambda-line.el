@@ -8,7 +8,7 @@
 ;; Keywords: mode-line faces
 
 
-;; This file is not part of GNU Emacs
+;; This file is NOT part of GNU Emacs
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -74,9 +74,9 @@ displayed. It can be an integer or a float number. `nil' means no limit."
   :group 'lambda-line)
 
 (defcustom lambda-line-abbrev nil
-  "If t then show abbreviated mode symbol in modeline. Default is
-nil. To change the values of the major-mode symbols see the value
-of lambda-line-abbrev-alist"
+  "If t then show abbreviated mode symbol in modeline.
+Default is nil. To change the values of the major-mode symbols
+see the value of `lambda-line-abbrev-alist'"
   :group 'lambda-line
   :type 'boolean)
 
@@ -92,7 +92,7 @@ of lambda-line-abbrev-alist"
 
 ;; Visual Bell
 (defcustom lambda-line-visual-bell t
-  "If t then use lambda-line-visual-bell."
+  "If t then use `lambda-line-visual-bell'."
   :group 'lambda-line
   :type 'boolean)
 
@@ -138,20 +138,20 @@ of lambda-line-abbrev-alist"
   :group 'lambda-line)
 
 (defcustom lambda-line-space-top +.35
-  "Space adjustment for top of modeline
- Possitive is upwards"
+  "Space adjustment for top of status-line.
+Positive is upwards"
   :type 'float
   :group 'lambda-line)
 
 (defcustom lambda-line-space-bottom -.5
-  "Space adjustment for bottom of modeline
- Negative is downwards."
+  "Space adjustment for bottom of status-line.
+Negative is downwards."
   :type 'float
   :group 'lambda-line)
 
 (defcustom lambda-line-symbol-position .067
-  "Space adjustment for bottom of modeline
- Negative is downwards."
+  "Space adjustment for symbol in status-line.
+Negative is downwards."
   :type 'float
   :group 'lambda-line)
 
@@ -252,19 +252,22 @@ KEY mode name, for reference only. Easier to do lookups and/or replacements.
   :group 'lambda-line)
 
 (defcustom lambda-line-mode-format-activate-hook nil
-  "Add hooks on activation of the mode, for those modes that define their own status-line."
+  "Add hooks on activation of the mode.
+This is for those modes that define their own status-line."
   :type 'hook
   :options '(turn-on-auto-fill flyspell-mode)
   :group 'lambda-line)
 
 (defcustom lambda-line-mode-format-deactivate-hook nil
-  "Remove hooks on de-activation of the mode, for those modes that define their own status-line."
+  "Remove hooks on de-activation of the mode.
+This is for those modes that define their own status-line."
   :type 'hook
   :options '(turn-on-auto-fill flyspell-mode)
   :group 'lambda-line)
 
 (defcustom lambda-line-default-mode-format 'lambda-line-default-mode
-  "Default mode to evaluate if no match could be found in `lambda-lines-mode-formats'"
+  "Default mode to evaluate.
+This is if no match could be found in `lambda-lines-mode-formats'"
   :type 'function
   :group 'lambda-line)
 
