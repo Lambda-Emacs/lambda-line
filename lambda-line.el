@@ -97,7 +97,7 @@ of lambda-line-abbrev-alist"
   :type 'boolean)
 
 ;; Mode line symbols
-(defcustom lambda-line-gui-ro-symbol " ⬤"  ;;  ⬤◯⨂
+(defcustom lambda-line-gui-ro-symbol " ⨂"  ;;  ⬤◯⨂
   "Modeline gui read-only symbol."
   :group 'lambda-line
   :type 'string)
@@ -107,7 +107,7 @@ of lambda-line-abbrev-alist"
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-gui-rw-symbol " ⬤" ; ◉ ◎ ⬤◯
+(defcustom lambda-line-gui-rw-symbol " ◯" ; ◉ ◎ ⬤◯
   "Modeline gui read-write symbol."
   :group 'lambda-line
   :type 'string)
