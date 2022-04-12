@@ -520,7 +520,7 @@ Otherwise show '-'."
 ;; https://cocktailmake.github.io/posts/emacs-modeline-enhancement-for-git-diff/
 (when lambda-line-git-diff-mode-line
   (defadvice vc-git-mode-line-string (after plus-minus (file) compile activate)
-    "Show the information of git diff on modeline."
+    "Show the information of git diff in status-line"
     (setq ad-return-value
 	      (concat ad-return-value
 		          (let ((plus-minus (vc-git--run-command-string
@@ -531,7 +531,7 @@ Otherwise show '-'."
                          " "
 			             (format "+%s" (match-string 1 plus-minus))
 			             (format "-%s" (match-string 2 plus-minus)))
-		              (propertize "" 'face '(:weight bold))))))))
+		              ""))))))
 
 ;;;;; Flycheck/Flymake Segment
 (defvar-local lambda-line--flycheck-text nil)
@@ -730,12 +730,16 @@ tty (using regular ASCII characters)."
   ;; Setup flycheck hooks
   (add-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
   (add-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
+  (when lambda-line-git-diff-mode-line
+    (add-hook 'after-save-hook #'vc-refresh-state))
   )
 
 (defun lambda-line-prog-deactivate ()
   ;; Remove flycheck hooks
   (remove-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
   (remove-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
+  (when lambda-line-git-diff-mode-line
+    (remove-hook 'after-save-hook #'vc-refresh-state))
   )
 
 ;;;;; Text Mode
