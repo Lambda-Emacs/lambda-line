@@ -411,11 +411,11 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 
 (defcustom lambda-line-abbrev-alist
   `((dired-mode . "Dir")
-    (emacs-lisp-mode . "EL")
+    (emacs-lisp-mode . "𝛌")
     (fundamental-mode . "F")
     (helpful-mode . "")
     (help-mode . "")
-    (lisp-interaction-mode . "λ")
+    (lisp-interaction-mode . "λΙ")
     (markdown-mode . "MD")
     (magit-mode . "MG")
     (nxhtml-mode . "NX")
