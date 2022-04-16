@@ -656,9 +656,10 @@ tty (using regular ASCII characters)."
                                               'lambda-line-inactive-status-MD))))))
 
          (left (concat
-                ;; add invisible char for extra vertical padding
-                (propertize lambda-line-vspace 'face (if active 'lambda-line-vspace-active
-                                                       'lambda-line-vspace-inactive))
+                ;; add invisible char in GUI for extra vertical padding
+                (when (display-graphic-p)
+                  (propertize lambda-line-vspace 'face (if active 'lambda-line-vspace-active
+                                                         'lambda-line-vspace-inactive)))
                 (propertize " "  'face (if active 'lambda-line-active
                                          'lambda-line-inactive)
                             'display `(raise ,lambda-line-space-top))
