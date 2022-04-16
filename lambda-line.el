@@ -96,6 +96,13 @@ see the value of `lambda-line-abbrev-alist'"
   :group 'lambda-line
   :type 'boolean)
 
+;; Invert status faces
+;; This make lambda-line look more like nano-modeline
+(defcustom lambda-line-status-invert t
+  "If t then invert the colors to get a box effect for the corner of the status line."
+  :group 'lambda-line
+  :type 'boolean)
+
 ;; Mode line symbols
 (defcustom lambda-line-gui-ro-symbol " ⨂"  ;;  ⬤◯⨂
   "Modeline gui read-only symbol."
@@ -112,17 +119,17 @@ see the value of `lambda-line-abbrev-alist'"
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-ro-symbol " 𝛌"
+(defcustom lambda-line-tty-ro-symbol " 𝛌 "
   "Modeline tty read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-mod-symbol "  𝛌"
+(defcustom lambda-line-tty-mod-symbol " 𝛌 "
   "Modeline tty read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-rw-symbol " 𝛌"
+(defcustom lambda-line-tty-rw-symbol " 𝛌 "
   "Modeline tty read-write symbol."
   :group 'lambda-line
   :type 'string)
@@ -338,32 +345,32 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 ;; lambda-line uses a colored symbol to indicate the status of the buffer
 
 (defface lambda-line-active-status-RO
-  '((t (:inherit (warning))))
+  '((t (:inherit (warning) (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for active READ-ONLY element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-RO
-  '((t (:inherit (mode-line-inactive) :foreground "light gray")))
+  '((t (:inherit (mode-line-inactive) :foreground "light gray" (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for inactive READ-ONLY element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-RW
-  '((t (:inherit (success))))
+  '((t (:inherit (success)  (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for active READ-WRITE element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-RW
-  '((t (:inherit (mode-line-inactive) :foreground "light gray")))
+  '((t (:inherit (mode-line-inactive) :foreground "light gray"  (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for inactive READ-WRITE element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-MD
-  '((t (:inherit (error))))
+  '((t (:inherit (error)  (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for active MODIFIED element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-MD
-  '((t (:inherit (mode-line-inactive) :foreground "light gray")))
+  '((t (:inherit (mode-line-inactive) :foreground "light gray"  (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for inactive MODIFIED element."
   :group 'lambda-line-inactive)
 
