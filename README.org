@@ -13,6 +13,8 @@ Information displayed depends on major mode. Not all segments display in every m
 #+ATTR_HTML: :width 85%
 [[file:screenshots/read-only-dark.png]]
 #+ATTR_HTML: :width 85%
+[[file:screenshots/write-dark-prog.png]]
+#+ATTR_HTML: :width 85%
 [[file:screenshots/read-write-light.png]]
 #+ATTR_HTML: :width 85%
 [[file:screenshots/read-only-light.png]]
