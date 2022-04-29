@@ -292,11 +292,11 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   :group 'lambda-line-inactive)
 
 (defface lambda-line-vspace-active
-  '((t (:invisible t :height 1.5)))
+  '((t (:invisible t :height 1.5 :inherit (mode-line))))
   "Face for vertical spacer in active line.")
 
 (defface lambda-line-vspace-inactive
-  '((t (:invisible t :height 1.5)))
+  '((t (:invisible t :height 1.5 :inherit (mode-line-inactive))))
   "Face for vertical spacer in inactive line.")
 
 (defface lambda-line-active-name
@@ -345,7 +345,7 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 ;; lambda-line uses a colored symbol to indicate the status of the buffer
 
 (defface lambda-line-active-status-RO
-  '((t (:inherit (warning) (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit (mode-line) :foreground "yellow" (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for active READ-ONLY element."
   :group 'lambda-line-active)
 
@@ -355,7 +355,7 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-RW
-  '((t (:inherit (success)  (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit (mode-line) :foreground "green" (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for active READ-WRITE element."
   :group 'lambda-line-active)
 
@@ -365,7 +365,7 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-MD
-  '((t (:inherit (error)  (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit (mode-line) :foreground "red" (when lambda-line-status-invert :inverse-video t))))
   "Modeline face for active MODIFIED element."
   :group 'lambda-line-active)
 
@@ -558,7 +558,7 @@ Otherwise show '-'."
                        (propertize "Good " 'face 'success)))
           ('running (propertize "Checking " 'face 'info))
           ('errored (propertize "Error " 'face 'error))
-          ('interrupted (propertize "Paused " 'face 'lambda-line-inactive))
+          ('interrupted (propertize "Paused " 'face 'fringe))
           ('no-checker ""))))
 
 (defun lambda-line-check-syntax ()
@@ -571,7 +571,7 @@ the mode-line (if available)."
 
 ;;;;; Vertical Spacer
 (defvar lambda-line-vspace "⁣"
-  "Use an invisible character to generate vertical space (i.e. padding) in the status-line.")
+"Use an invisible character to generate vertical space (i.e. padding) in the status-line.")
 
 ;;;;; Mode line status
 ;; ---------------------------------------------------------------------
