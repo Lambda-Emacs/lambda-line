@@ -464,23 +464,7 @@ want to use in the modeline *as substitute for* the original."
   "Return current major mode name."
   (format-mode-line mode-name))
 
-;;;;; String Trim
-(defun lambda-line--string-trim-left (string)
-  "Remove whitespace at the beginning of STRING."
-  (if (string-match "\\`[ \t\n\r]+" string)
-      (replace-match "" t t string)
-    string))
-
-(defun lambda-line--string-trim-right (string)
-  "Remove whitespace at the end of STRING."
-  (if (string-match "[ \t\n\r]+\\'" string)
-      (replace-match "" t t string)
-    string))
-
-(defun lambda-line--string-trim (string)
-  "Remove whitespace at the beginning and end of STRING."
-  (lambda-line--string-trim-left (lambda-line--string-trim-right string)))
-
+;;;;; String Truncate
 (defun lambda-line-truncate (str size &optional ellipsis)
   "If STR is longer than SIZE, truncate it and add ELLIPSIS."
 
@@ -1143,7 +1127,7 @@ tty (using regular ASCII characters)."
          (entry-author (elfeed-meta elfeed-show-entry :author)))
     (lambda-line-compose nil
                          title
-                         ;; (nano-modeline-truncate title 40)
+                         ;; (lambda-line-truncate title 40)
                          (concat "(" tags-str ")")
                          feed-title)))
 
