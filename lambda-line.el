@@ -1369,6 +1369,13 @@ depending on the version of mu4e."
   (advice-remove #'ispell-display-buffer
                  #'lambda-line-enlarge-ispell-choices-buffer))
 
+;;;; Eldoc
+;; `eldoc-minibuffer-message' changes `mode-line-format' but status-line when
+;; `lambda-line-position' is `top' fails to display info. Solution is to move
+;; eldoc messages to the minibuffer/echo area.
+(when (eq lambda-line-position 'top)
+  (setq eldoc-message-function #'message))
+
 ;;;; Setup Lambda-line
 ;; ---------------------------------------------------------------------
 (defun lambda-line-face-clear (face)
