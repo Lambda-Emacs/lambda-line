@@ -299,6 +299,14 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   '((t (:invisible t :height 1.5 :inherit (mode-line-inactive))))
   "Face for vertical spacer in inactive line.")
 
+(defface lambda-line-hspace-active
+  '((t (:invisible t :family "Monospace" :inherit (mode-line))))
+  "Face for vertical spacer in active line.")
+
+(defface lambda-line-hspace-inactive
+  '((t (:invisible t :family "Monospace" :inherit (mode-line-inactive))))
+  "Face for vertical spacer in inactive line.")
+
 (defface lambda-line-active-name
   '((t (:inherit (mode-line))))
   "Modeline face for active name element."
