@@ -1189,10 +1189,10 @@ depending on the version of mu4e."
 
 (defun lambda-line-mu4e-loading-mode ()
   (lambda-line-compose (lambda-line-status)
-                       "Loading..."
-                       (lambda-line-mu4e-context)
+                       (format-time-string "%A %d %B %Y, %H:%M ")
                        nil
-                       (format-time-string "%A %d %B %Y, %H:%M ")))
+                       "Loading..."
+                       (lambda-line-mu4e-context)))
 
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-main-mode-p ()
@@ -1200,10 +1200,10 @@ depending on the version of mu4e."
 
 (defun lambda-line-mu4e-main-mode ()
   (lambda-line-compose (lambda-line-status)
-                       (lambda-line-mu4e-context)
+                       (format-time-string "%A %d %B %Y, %H:%M ")
                        ""
                        nil
-                       (format-time-string "%A %d %B %Y, %H:%M ")))
+                       (lambda-line-mu4e-context)))
 
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-compose-mode-p ()
