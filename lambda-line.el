@@ -291,14 +291,6 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   "Modeline face for inactive line."
   :group 'lambda-line-inactive)
 
-(defface lambda-line-vspace-active
-  '((t (:invisible t :height 1.5 :inherit (mode-line))))
-  "Face for vertical spacer in active line.")
-
-(defface lambda-line-vspace-inactive
-  '((t (:invisible t :height 1.5 :inherit (mode-line-inactive))))
-  "Face for vertical spacer in inactive line.")
-
 (defface lambda-line-hspace-active
   '((t (:invisible t :family "Monospace" :inherit (mode-line))))
   "Face for vertical spacer in active line.")
@@ -554,156 +546,137 @@ Otherwise show '-'."
           ('no-checker ""))))
 
 (defun lambda-line-check-syntax ()
-  "Displays syntax-checking information from flymake/flycheck in
-the mode-line (if available)."
+  "Display syntax-checking information from flymake/flycheck in the mode-line (if available)."
   (if (and (boundp 'flymake-mode) flymake-mode)
-      (concat (lambda-line--string-trim (format-mode-line
-                                         flymake-mode-line-format)) " ")
+      (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
-;;;;; Vertical Spacer
-(defvar lambda-line-vspace "⁣"
-"Use an invisible character to generate vertical space (i.e. padding) in the status-line.")
-
-;;;;; Mode line status
-;; ---------------------------------------------------------------------
+;;;;; Status
 (defun lambda-line-status ()
-  "Return buffer status.
-Default symbols are set for both GUI (using UTF-8 symbols) and
-tty (using regular ASCII characters)."
-  (let ((read-only     (when (not (or (derived-mode-p 'vterm-mode)
-                                      (derived-mode-p 'term-mode)
-                                      (derived-mode-p 'Info-mode)))
-                         buffer-read-only))
+  "Return buffer status, one of 'read-only, 'modified or 'read-write."
+
+  (let ((read-only  (when (not (or (derived-mode-p 'vterm-mode)
+                                   (derived-mode-p 'term-mode)
+                                   (derived-mode-p 'Info-mode)))
+                      buffer-read-only))
         (modified    (and buffer-file-name (buffer-modified-p))))
-    ;; Use status letters for TTY display
-    (cond
-     (modified
-      (if (display-graphic-p)
-          lambda-line-gui-mod-symbol
-        lambda-line-tty-mod-symbol))
-     (read-only
-      (if (display-graphic-p)
-          lambda-line-gui-ro-symbol
-        lambda-line-tty-ro-symbol))
-     (t (if (display-graphic-p)
-            lambda-line-gui-rw-symbol
-          lambda-line-tty-rw-symbol)))))
+    (cond (modified  'modified)
+          (read-only 'read-only)
+          (t         'read-write))))
 
-;;;; Compose mode line
-;; -------------------------------------------------------------------
+;;;;; Compose Status-Line
 (defun lambda-line-compose (status name primary tertiary secondary)
-  "Compose a string with provided information."
-  (let* ((char-width    (window-font-width nil 'header-line))
-         (window        (get-buffer-window (current-buffer)))
-         (active        (eq window lambda-line--selected-window))
-         (read-only     (when (not (or (derived-mode-p 'vterm-mode)
-                                       (derived-mode-p 'term-mode)
-                                       (derived-mode-p 'Info-mode)))
-                          buffer-read-only))
-         (modified      (and buffer-file-name (buffer-modified-p)))
-         (read-write    (not (or (buffer-modified-p) buffer-read-only)))
-         (prefix (if (display-graphic-p)
-                     (cond
-                      (read-only
-                       (propertize (if (window-dedicated-p)" –– " lambda-line-gui-ro-symbol)
-                                   'face (if active
-                                             'lambda-line-active-status-RO
-                                           'lambda-line-inactive-status-RO)
-                                   'display `(raise ,lambda-line-symbol-position)))
-                      (modified
-                       (propertize (if (window-dedicated-p)" –– " lambda-line-gui-mod-symbol)
-                                   'face (if active
-                                             'lambda-line-active-status-MD
-                                           'lambda-line-inactive-status-MD)
-                                   'display `(raise ,lambda-line-symbol-position)))
-                      (read-write
-                       (propertize (if (window-dedicated-p) " –– " lambda-line-gui-rw-symbol)
-                                   'face (if active
-                                             'lambda-line-active-status-RW
-                                           'lambda-line-inactive-status-RW)
-                                   'display `(raise ,lambda-line-symbol-position)))
-                      (t
-                       (propertize status
-                                   'face (if active
-                                             'lambda-line-active-status-MD
-                                           'lambda-line-inactive-status-MD)
-                                   'display `(raise ,lambda-line-symbol-position))))
-                   ;; TTY displays
-                   (cond (read-only
-                          (propertize
-                           (if (window-dedicated-p) " -- " lambda-line-tty-ro-symbol)
-                           'face (if active
-                                     'lambda-line-active-status-RO
-                                   'lambda-line-inactive-status-RO)))
-                         (modified
-                          (propertize
-                           (if (window-dedicated-p) " -- " lambda-line-tty-mod-symbol)
-                           'face (if active
-                                     'lambda-line-active-status-MD
-                                   'lambda-line-inactive-status-MD)))
-                         (read-write
-                          (propertize
-                           (if (window-dedicated-p) " -- " lambda-line-tty-rw-symbol)
-                           'face (if active
-                                     'lambda-line-active-status-RW
-                                   'lambda-line-inactive-status-RW)))
-                         (t
-                          (propertize status
-                                      'face (if active
-                                                'lambda-line-active-status-MD
-                                              'lambda-line-inactive-status-MD))))))
+  "Compose a string with provided information"
 
-         (left (concat
-                ;; add invisible char in GUI for extra vertical padding
-                (when (display-graphic-p)
-                  (propertize lambda-line-vspace 'face (if active 'lambda-line-vspace-active
-                                                         'lambda-line-vspace-inactive)))
-                (propertize " "  'face (if active 'lambda-line-active
-                                         'lambda-line-inactive)
-                            'display `(raise ,lambda-line-space-top))
-                (propertize name 'face (if active 'lambda-line-active-name
-                                         'lambda-line-inactive-name))
-                (propertize " "  'face (if active 'lambda-line-active
-                                         'lambda-line-inactive)
-                            'display `(raise ,lambda-line-space-bottom))
-                (propertize primary 'face (if active 'lambda-line-active-primary
-                                            'lambda-line-inactive-primary))))
-         (right (concat
-                 tertiary
-                 ;; (propertize tertiary 'face (if active 'lambda-line-active-tertiary
-                 ;;                              'lambda-line-inactive-tertiary))
-                 (propertize " "  'face (if active 'lambda-line-active
-                                          'lambda-line-inactive))
-                 (propertize secondary 'face (if active 'lambda-line-active-secondary
-                                               'lambda-line-inactive-secondary))
-                 (propertize lambda-line-hspace 'face (if active 'lambda-line-active
-                                                        'lambda-line-inactive))
-                 ))
+  (let* ((window (get-buffer-window (current-buffer)))
 
-         (available-width (- (window-total-width)
-                             (length prefix) (length left) (length right)
-                             (/ (window-right-divider-width) char-width)))
-         (available-width (max 1 available-width)))
-    ;; Compose status-line
-    (concat (if lambda-line-prefix prefix nil)
-            left
-            (propertize (make-string available-width ?\ )
-                        'face (if active 'lambda-line-active
-                                'lambda-line-inactive))
-            right
-            (propertize (make-string available-width ?\ )
-                        'face (if active 'lambda-line-active
-                                'lambda-line-inactive)))))
+         (name-max-width (max 12
+                              (- (window-body-width)
+                                 (round (* 0.8 (length primary)))
+                                 (length tertiary)
+                                 (length secondary))))
+
+         (name (if (and (stringp name) (> (length name) name-max-width))
+                   (format "…%s" (substring name (- (length name) name-max-width -1)))
+                 name))
+
+         (status (or status (lambda-line-status)))
+
+         (active (eq window lambda-line--selected-window))
+
+         (prefix (cond ((eq lambda-line-prefix 'none) nil)
+                       ((eq lambda-line-prefix 'icon) icon)
+                       ((eq lambda-line-prefix 'simple)
+                        (cond ((eq status 'read-only)  "RO")
+                              ((eq status 'read-write) "RW")
+                              ((eq status 'modified)   "**")
+                              (t                       "--")))
+                       (t
+                        (cond ((window-dedicated-p) (if (display-graphic-p) " ––" " --"))
+                              ((eq status 'read-only)
+                               (if (display-graphic-p) lambda-line-gui-ro-symbol
+                                 lambda-line-tty-ro-symbol))
+                              ((eq status 'read-write) (if (display-graphic-p) lambda-line-gui-rw-symbol
+                                                         lambda-line-tty-rw-symbol))
+                              ((eq status 'modified)   (if (display-graphic-p) lambda-line-gui-mod-symbol
+                                                         lambda-line-tty-mod-symbol))
+                              ;; special modes
+                              ((derived-mode-p 'term-mode) " >_")
+                              ((derived-mode-p 'vterm-mode) " >_")
+                              ((derived-mode-p 'Info-mode) " ?")
+                              ;; otherwise just use rw symbol
+                              (t (if (display-graphic-p) lambda-line-gui-rw-symbol
+                                   lambda-line-tty-rw-symbol))))))
+
+         (face-modeline (if active
+                            'lambda-line-active
+                          'lambda-line-inactive))
+         (face-prefix (if (not prefix) face-modeline
+                        (if active
+                            (cond ((eq status 'read-only)  'lambda-line-active-status-RO)
+                                  ((eq status 'read-write) 'lambda-line-active-status-RW)
+                                  ((eq status 'modified)   'lambda-line-active-status-MD)
+                                  ((or (derived-mode-p 'term-mode)
+                                       (derived-mode-p 'vterm-mode))
+                                   'lambda-line-active-status-MD)
+                                  ((derived-mode-p 'Info-mode) 'lambda-line-active-status-RO)
+                                  (t                       'lambda-line-active))
+                          (cond ((eq status 'read-only)  'lambda-line-inactive-status-RO)
+                                ((eq status 'read-write) 'lambda-line-inactive-status-RW)
+                                ((eq status 'modified)   'lambda-line-inactive-status-MD)
+                                ((or (derived-mode-p 'term-mode)
+                                     (derived-mode-p 'vterm-mode)
+                                     (derived-mode-p 'Info-mode))
+                                 'lambda-line-inactive-status-RW)
+                                (t                       'lambda-line-inactive)))))
+         (face-name (if active
+                        'lambda-line-active-name
+                      'lambda-line-inactive-name))
+         (face-primary (if active
+                           'lambda-line-active-primary
+                         'lambda-line-inactive-primary))
+         (face-secondary (if active
+                             'lambda-line-active-secondary
+                           'lambda-line-inactive-secondary))
+         (face-tertiary (if active
+                            'lambda-line-active-tertiary
+                          'lambda-line-inactive-tertiary))
+         (left
+          ;; special face for special mode prefixes
+          (concat
+           (propertize prefix 'face face-prefix 'display `(raise ,lambda-line-symbol-position))
+           ;; this matters for inverse-video!
+           (propertize " " 'face face-prefix  'display `(raise ,lambda-line-space-top))
+
+           (when lambda-line-prefix-padding
+             (propertize " " 'face face-modeline))
+
+           (propertize name 'face face-name)
+
+           (propertize " "  'face (if active 'lambda-line-active
+                                    'lambda-line-inactive)
+                       'display `(raise ,lambda-line-space-bottom))
+
+           (propertize primary 'face face-primary)))
+
+         (right (concat tertiary (propertize secondary 'face face-secondary) (propertize  lambda-line-hspace 'face face-modeline)))
+
+         (right-len (length (format-mode-line right))))
+    (concat
+     left
+     (propertize " " 'face face-modeline 'display `(space :align-to (- right ,right-len)))
+     right)))
+
+;;;; Mode Functions
 
 ;;;; Default display
-(defun lambda-line-default-mode ()
+(defun lambda-line-default-mode (&optional icon)
   "Compose the default status line."
   (let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
         (mode-name   (lambda-line-mode-name))
         (branch      (lambda-line-vc-project-branch))
         (position    (format-mode-line "%l:%c:%o")))
-    (lambda-line-compose (lambda-line-status)
+    (lambda-line-compose icon
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
                          (concat "(" mode-name
                                  (when branch
