@@ -63,8 +63,21 @@ displayed. It can be an integer or a float number. `nil' means no limit."
           (const :tag "Bottom" bottom))
   :group 'lambda-line)
 
-(defcustom lambda-line-prefix t
-  "Include a prefix icon to indicate buffer status in the status-line."
+;; (defcustom lambda-line-prefix t
+;;   "Include a prefix icon to indicate buffer status in the status-line."
+;;   :type 'boolean
+;;   :group 'lambda-line)
+
+(defcustom lambda-line-prefix 'symbol
+  "Type of prefix on the left"
+  :type '(choice (const :tag "None" none)
+                 (const :tag "Default (RO/RW/**)" simple)
+                 (const :tag "Icon" icon)
+                 (const :tag "Symbol" symbol))
+  :group 'lambda-line)
+
+(defcustom lambda-line-prefix-padding t
+  "Include prefix padding."
   :type 'boolean
   :group 'lambda-line)
 
@@ -171,69 +184,93 @@ Negative is downwards."
   '(;; with :mode-p first
     (prog-mode              :mode-p lambda-line-prog-mode-p
                             :format lambda-line-prog-mode
+                            :icon "" ;; nerd-font / oct-file-code
                             :on-activate lambda-line-prog-activate
                             :on-deactivate lambda-line-prog-deactivate)
     (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
-                            :format lambda-line-mu4e-dashboard-mode)
+                            :format lambda-line-mu4e-dashboard-mode
+                            :icon "") ;; nerd-font / oct-inbox
     (text-mode              :mode-p lambda-line-text-mode-p
-                            :format lambda-line-text-mode)
+                            :format lambda-line-text-mode
+                            :icon "") ;; nerd-font / oct-file-text
     (messages-mode          :mode-p lambda-line-messages-mode-p
-                            :format lambda-line-messages-mode)
+                            :format lambda-line-messages-mode
+                            :icon "") ;; nerd-font / oct-comment
     (message-mode           :mode-p lambda-line-message-mode-p
                             :format lambda-line-message-mode)
     (term-mode              :mode-p lambda-line-term-mode-p
-                            :format lambda-line-term-mode)
+                            :format lambda-line-term-mode
+                            :icon "") ;; nerd-font / oct-term
     (vterm-mode             :mode-p lambda-line-vterm-mode-p
-                            :format lambda-line-term-mode)
+                            :format lambda-line-term-mode
+                            :icon "") ;; nerd-font / oct-term
     (buffer-menu-mode       :mode-p lambda-line-buffer-menu-mode-p
                             :format lambda-line-buffer-menu-mode
                             :on-activate lambda-line-buffer-menu-activate
-                            :on-deactivate lambda-line-buffer-menu-deactivate)
+                            :on-deactivate lambda-line-buffer-menu-deactivate
+                            :icon "") ;; nerd-font / oct-three-bars
     (calendar-mode          :mode-p lambda-line-calendar-mode-p
                             :format lambda-line-calendar-mode
                             :on-activate lambda-line-calendar-activate
-                            :on-deactivate lambda-line-calendar-deactivate)
+                            :on-deactivate lambda-line-calendar-deactivate
+                            :icon "") ;; nerd-font / oct-calendar
     (completion-list-mode   :mode-p lambda-line-completion-list-mode-p
-                            :format lambda-line-completion-list-mode)
+                            :format lambda-line-completion-list-mode
+                            :icon "") ;; nerd-font / oct-list-unordered
     (deft-mode              :mode-p lambda-line-deft-mode-p
-      :format lambda-line-deft-mode)
+      :format lambda-line-deft-mode
+      :icon "") ;; nerd-font / oct-search
     (doc-view-mode          :mode-p lambda-line-doc-view-mode-p
-                            :format lambda-line-doc-view-mode)
+                            :format lambda-line-doc-view-mode
+                            :icon "") ;; nerd-font / oct-info
     (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
                             :format lambda-line-elfeed-search-mode
                             :on-activate lambda-line-elfeed-search-activate
-                            :on-deactivate lambda-line-elfeed-search-deactivate)
+                            :on-deactivate lambda-line-elfeed-search-deactivate
+                            :icon "") ;; nerd-font / oct-search
     (elfeed-show-mode       :mode-p lambda-line-elfeed-show-mode-p
-                            :format lambda-line-elfeed-show-mode)
+                            :format lambda-line-elfeed-show-mode
+                            :icon "") ;; nerd-font / oct-comment
     (elpher-mode            :mode-p lambda-line-elpher-mode-p
                             :format lambda-line-elpher-mode
-                            :on-activate lambda-line-elpher-activate)
+                            :on-activate lambda-line-elpher-activate
+                            :icon "") ;; nerd-font / oct-browser
     (info-mode              :mode-p lambda-line-info-mode-p
                             :format lambda-line-info-mode
                             :on-activate lambda-line-info-activate
-                            :on-deactivate lambda-line-info-deactivate)
+                            :on-deactivate lambda-line-info-deactivate
+                            :icon "") ;; nerd-font / oct-info
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
-                            :format lambda-line-mu4e-compose-mode)
+                            :format lambda-line-mu4e-compose-mode
+                            :icon "") ;; nerd-font / oct-pencil
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
-                            :format lambda-line-mu4e-headers-mode)
+                            :format lambda-line-mu4e-headers-mode
+                            :icon "") ;; nerd-font / oct-search
     (mu4e-loading-mode      :mode-p lambda-line-mu4e-loading-mode-p
-                            :format lambda-line-mu4e-loading-mode)
+                            :format lambda-line-mu4e-loading-mode
+                            :icon "") ;; nerd-font / oct-gears
     (mu4e-main-mode         :mode-p lambda-line-mu4e-main-mode-p
-                            :format lambda-line-mu4e-main-mode)
+                            :format lambda-line-mu4e-main-mode
+                            :icon "") ;; nerd-font / oct-inbox
     (mu4e-view-mode         :mode-p lambda-line-mu4e-view-mode-p
-                            :format lambda-line-mu4e-view-mode)
+                            :format lambda-line-mu4e-view-mode
+                            :icon "") ;; nerd-font / oct-comment
     (org-agenda-mode        :mode-p lambda-line-org-agenda-mode-p
-                            :format lambda-line-org-agenda-mode)
+                            :format lambda-line-org-agenda-mode
+                            :icon "") ;; nerd-font / oct-calendar
     (org-capture-mode       :mode-p lambda-line-org-capture-mode-p
                             :format lambda-line-org-capture-mode
                             :on-activate lambda-line-org-capture-activate
-                            :on-deactivate lambda-line-org-capture-deactivate)
+                            :on-deactivate lambda-line-org-capture-deactivate
+                            :icon "") ;; nerd-font / oct-calendar
     (org-clock-mode         :mode-p lambda-line-org-clock-mode-p
                             :format lambda-line-org-clock-mode
                             :on-activate lambda-line-org-clock-activate
-                            :on-deactivate lambda-line-org-clock-deactivate)
+                            :on-deactivate lambda-line-org-clock-deactivate
+                            :icon "") ;; nerd-font / oct-clock
     (pdf-view-mode          :mode-p lambda-line-pdf-view-mode-p
-                            :format lambda-line-pdf-view-mode)
+                            :format lambda-line-pdf-view-mode
+                            :icon "") ;; nerd-font/ oct-file-pdf
 
     ;; hooks only go last
     (ein-notebook-mode      :on-activate lambda-line-ein-notebook-activate
@@ -375,7 +412,7 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   :group 'lambda-line-inactive)
 
 
-;;;;; Display Faces
+;;;;; Bell Faces
 
 (defface lambda-line-visual-bell '((t (:background "red3")))
   "Face to use for the mode-line when `lambda-line-visual-bell-config' is used."
@@ -690,7 +727,6 @@ Otherwise show '-'."
                               position " ")
                            position))))
 
-;;;; Mode Functions
 ;;;;; Prog Mode
 ;; ---------------------------------------------------------------------
 (defun lambda-line-prog-mode-p ()
@@ -785,8 +821,8 @@ Otherwise show '-'."
                        ""))
 
 (defun lambda-line-info-activate ()
-  (if (eq lambda-line-position 'top)
-      (setq Info-use-header-line nil)))
+(if (eq lambda-line-position 'top)
+    (setq Info-use-header-line nil)))
 
 (defun lambda-line-info-deactivate ()
   (custom-reevaluate-setting 'Info-use-header-line))
