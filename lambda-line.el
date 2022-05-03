@@ -571,8 +571,9 @@ Otherwise show '-'."
 
 ;;;;; Compose Status-Line
 (defun lambda-line-compose (status name primary tertiary secondary)
-  "Compose a string with provided information"
-
+  "Compose a string with provided information.
+Each section is first defined, along with a measure of the width of the status-line.
+STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed only in some modes."
   (let* ((window (get-buffer-window (current-buffer)))
 
          (name-max-width (max 12
