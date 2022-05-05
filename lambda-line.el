@@ -784,8 +784,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                        ""))
 
 (defun lambda-line-info-activate ()
-(if (eq lambda-line-position 'top)
-    (setq Info-use-header-line nil)))
+  (if (eq lambda-line-position 'top)
+      (setq Info-use-header-line nil)))
 
 (defun lambda-line-info-deactivate ()
   (custom-reevaluate-setting 'Info-use-header-line))

@@ -28,13 +28,28 @@ have to clone or otherwise download the repo and put it into your load path.
 Here's a basic way of setting it up using [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/raxod502/straight.el][straight]].
 
 #+begin_src emacs-lisp
-  (use-package lambda-line
-    :straight (:type git :host github :repo "lambda-emacs/lambda-line") 
-    :custom
-    ;; Set position of status-line 
-    (lambda-line-position 'top)
-    :config
-    (lambda-line-mode))
+ (use-package lambda-line
+   :straight (:type git :host github :repo "lambda-emacs/lambda-line") 
+   :custom
+   (lambda-line-position 'top) ;; Set position of status-line 
+   (lambda-line-abbrev t) ;; abbreviate major modes
+   (lambda-line-hspace "  ")  ;; add some cushion
+   (lambda-line-prefix t) ;; use a prefix symbol
+   (lambda-line-prefix-padding nil) ;; no extra space for prefix 
+   (lambda-line-status-invert nil)  ;; no invert colors
+   (lambda-line-gui-ro-symbol  " ⨂") ;; symbols
+   (lambda-line-gui-mod-symbol " ⬤") 
+   (lambda-line-gui-rw-symbol  " ◯") 
+   (lambda-line-space-top +.50)  ;; padding on top and bottom of line
+   (lambda-line-space-bottom -.50)
+   (lambda-line-symbol-position 0.1) ;; adjust the vertical placement of symbol
+   :config
+   ;; activate lambda-line 
+   (lambda-line-mode) 
+   ;; set divider line in footer
+   (when (eq lambda-line-position 'top)
+    (setq-default mode-line-format (list "%_"))
+    (setq mode-line-format (list "%_"))))
 #+end_src
 
 * Options
@@ -49,13 +64,13 @@ Lambda-line has a lot of different options for customization. Please see
    + *NOTE*: If you use symbols you should make sure you are using a font that
         will display them properly. Here is one reliable way, using [[https://fontlibrary.org/en/font/symbola][Symbola]] font:
         #+begin_src emacs-lisp
-          (use-package fontset
-            :straight (:type built-in) ;; only include this if you use straight
-            :config
-            ;; Use symbola for proper unicode
-            (when (member "Symbola" (font-family-list))
-              (set-fontset-font
-               t 'symbol "Symbola" nil)))
+ (use-package fontset
+   :straight (:type built-in) ;; only include this if you use straight
+   :config
+   ;; Use symbola for proper unicode
+   (when (member "Symbola" (font-family-list))
+     (set-fontset-font
+      t 'symbol "Symbola" nil)))
         #+end_src
 - Abbreviate major modes with =lambda-line-abbrev=.
 - Show both vc project and branch in the modeline
