@@ -552,7 +552,9 @@ Otherwise show '-'."
 
 (defun lambda-line-check-syntax ()
   "Display syntax-checking information from flymake/flycheck in the mode-line (if available)."
-  (if (and (boundp 'flymake-mode) flymake-mode)
+  (if (and (>= emacs-major-version 28)
+           (boundp 'flymake-mode)
+           flymake-mode)
       (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
