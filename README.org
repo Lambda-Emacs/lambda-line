@@ -18,6 +18,10 @@ Information displayed depends on major mode. Not all segments display in every m
 [[file:screenshots/read-write-light.png]]
 #+ATTR_HTML: :width 85%
 [[file:screenshots/read-only-light.png]]
+#+ATTR_HTML: :width 85%
+[[file:screenshots/inverted-rw.png]]
+#+ATTR_HTML: :width 85%
+[[file:screenshots/inverted-ro.png]]
 
 To achieve the above coloration of the status-line see [[https://github.com/Lambda-Emacs/lambda-themes][lambda-themes]].
 
