@@ -103,7 +103,7 @@ see the value of `lambda-line-abbrev-alist'"
 
 ;; Invert status faces
 ;; This make lambda-line look more like nano-modeline
-(defcustom lambda-line-status-invert t
+(defcustom lambda-line-status-invert nil
   "If t then invert the colors to get a box effect for the corner of the status line."
   :group 'lambda-line
   :type 'boolean)
