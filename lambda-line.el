@@ -1049,7 +1049,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (derived-mode-p 'elfeed-search-mode))
 
 (defun lambda-line-elfeed-search-mode ()
-  (let* ((status  "NEWS")
+  (let* ((prefix "ELFEED")
          (no-database (zerop (elfeed-db-last-update)))
          (update      (> (elfeed-queue-count-total) 0))
 
@@ -1072,7 +1072,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                      ((zerop (elfeed-db-last-update)) "")
                      ((> (elfeed-queue-count-total) 0) "")
                      (t (elfeed-search--count-unread)))))
-    (lambda-line-compose status name primary nil secondary)))
+    (lambda-line-compose prefix name primary "" secondary)))
 
 ;; Elfeed uses header-line, we need to tell it to use our own format
 (defun lambda-line-elfeed-setup-header ()
@@ -1092,20 +1092,25 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (derived-mode-p 'elfeed-show-mode))
 
 (defun lambda-line-elfeed-show-mode ()
-  (let* ((status "NEWS")
-         (title        (elfeed-entry-title elfeed-show-entry))
-         (tags         (elfeed-entry-tags elfeed-show-entry))
-         (tags-str     (mapconcat #'symbol-name tags ", "))
-         (date         (seconds-to-time (elfeed-entry-date elfeed-show-entry)))
-         (feed         (elfeed-entry-feed elfeed-show-entry))
-         (feed-title   (plist-get (elfeed-feed-meta feed) :title))
-         (entry-author (elfeed-meta elfeed-show-entry :author)))
-    (lambda-line-compose status
-                         title
-                         ;; (lambda-line-truncate title 40)
-                         (concat "(" tags-str ")")
-                         feed-title)))
-
+  (let* ((title (elfeed-entry-title elfeed-show-entry))
+         (tags (elfeed-entry-tags elfeed-show-entry))
+         (tags-str (mapconcat #'symbol-name tags ", "))
+         (tag          (if tags
+                           (concat "(" tags-str ")")
+                         " "))
+         (date (seconds-to-time (elfeed-entry-date elfeed-show-entry)))
+         (feed (elfeed-entry-feed elfeed-show-entry))
+         (entry-author (elfeed-meta elfeed-show-entry :author))
+         (feed-title (if entry-author
+                         (concat entry-author " (" (elfeed-feed-title feed) ")")
+                       (elfeed-feed-title feed))))
+    (lambda-line-compose
+     ""
+     (lambda-line-truncate title 65)
+     tag
+     ""
+     (format-time-string "%Y-%m-%d %H:%M:%S" date)
+     )))
 
 ;;;; Mu4e
 
