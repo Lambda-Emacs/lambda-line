@@ -66,7 +66,7 @@ Lambda-line has a lot of different options for customization. Please see
 - Customize the various prefix status symbols in both GUI and TTY with
   =lambda-line-GUI/TTY-RO/RW/MD-symbol=.
    + *NOTE*: If you use symbols you should make sure you are using a font that
-        will display them properly. Here is one reliable way, using [[https://fontlibrary.org/en/font/symbola][Symbola]] font:
+        will display them properly. Here is one reliable way, using [[https://fontlibrary.org/assets/downloads/symbola/cf81aeb303c13ce765877d31571dc5c7/symbola.zip][Symbola]] font:
         #+begin_src emacs-lisp
  (use-package fontset
    :straight (:type built-in) ;; only include this if you use straight
