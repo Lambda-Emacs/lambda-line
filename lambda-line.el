@@ -685,6 +685,12 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
      right)))
 
 ;;;; Mode Functions
+(defun lambda-line-time ()
+  (let* ((hour (string-to-number (format-time-string "%I")))
+         (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
+    (concat
+     (propertize (format-time-string " %H:%M ") 'face `(:height 0.9))
+     (propertize (format "%s " icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0)))))
 
 ;;;; Default display
 (defun lambda-line-default-mode ()
