@@ -172,6 +172,21 @@ Negative is downwards."
   :type 'boolean
   :group 'lambda-line)
 
+(defcustom lambda-line-flycheck-label "Issues: "
+  "Show with flycheck/flymake issues count."
+  :type 'string
+  :group 'lambda-line)
+
+(defcustom lambda-line-display-group-start "("
+  "Modeline display group start indicator."
+  :group 'lambda-line
+  :type 'string)
+
+(defcustom lambda-line-display-group-end ")"
+  "Modeline display group end indicator."
+  :group 'lambda-line
+  :type 'string)
+
 (defcustom lambda-line-mode-formats
   '(;; with :mode-p first
     (prog-mode              :mode-p lambda-line-prog-mode-p
@@ -538,7 +553,7 @@ Otherwise show '-'."
           ('finished (if flycheck-current-errors
                          (let-alist (flycheck-count-errors flycheck-current-errors)
                            (let ((sum (+ (or .error 0) (or .warning 0))))
-                             (propertize (concat "Issues: "
+                             (propertize (concat lambda-line-flycheck-label
                                                  (number-to-string sum)
                                                  " ")
                                          'face (if .error
@@ -680,10 +695,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
         (position    (format-mode-line "%l:%c:%o")))
     (lambda-line-compose (lambda-line-status)
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
-                         (concat "(" mode-name
+                         (concat lambda-line-display-group-start mode-name
                                  (when branch
                                    branch)
-                                 ")")
+                                 lambda-line-display-group-end)
                          nil
                          ;; Narrowed buffer
                          (if (buffer-narrowed-p)
@@ -704,10 +719,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
         (position    (format-mode-line "%l:%c:%o")))
     (lambda-line-compose (lambda-line-status)
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
-                         (concat "(" mode-name
+                         (concat lambda-line-display-group-start mode-name
                                  (when branch
                                    branch)
-                                 ")")
+                                 lambda-line-display-group-end)
                          (if lambda-line-syntax
                              (lambda-line-check-syntax) "")
                          (concat
@@ -779,9 +794,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-info-mode ()
   (lambda-line-compose ""
                        "INFO"
-                       (concat "("
+                       (concat lambda-line-display-group-start
                                (lambda-line-info-breadcrumbs)
-                               ")")
+                               lambda-line-display-group-end)
                        nil
                        ""))
 
@@ -805,7 +820,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-term-mode ()
   (lambda-line-compose " >_ "
                        "Terminal"
-                       (concat "(" (file-name-nondirectory shell-file-name) ")")
+                       (concat lambda-line-display-group-start
+                               (file-name-nondirectory shell-file-name)
+                               lambda-line-display-group-end)
                        nil
                        (lambda-line-shorten-directory default-directory 32)))
 
@@ -820,7 +837,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-ssh-mode ()
   (lambda-line-compose " >_ "
                        "Terminal"
-                       (concat "(" (lambda-line-get-ssh-host default-directory) ")")
+                       (concat lambda-line-display-group-start
+                               (lambda-line-get-ssh-host default-directory)
+                               lambda-line-display-group-end)
                        nil
                        (lambda-line-shorten-directory (car (last (split-string default-directory ":"))) 32)))
 
@@ -859,9 +878,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
     (lambda-line-compose
      (lambda-line-status)
      buffer-name
-     (concat "(" mode-name
+     (concat lambda-line-display-group-start mode-name
              branch
-	         ")" )
+             lambda-line-display-group-end)
      nil
      page-number)))
 
@@ -885,9 +904,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
     (lambda-line-compose
      (lambda-line-status)
      buffer-name
-     (concat "(" mode-name
+     (concat lambda-line-display-group-start mode-name
              branch
-	         ")" )
+	     lambda-line-display-group-end)
      nil
      (concat page-number " "))))
 
@@ -971,7 +990,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-org-capture-mode ()
   (lambda-line-compose (lambda-line-status)
                        "Capture"
-                       (concat "(" (org-capture-get :description) ")")
+                       (concat lambda-line-display-group-start
+                               (org-capture-get :description)
+                               lambda-line-display-group-end)
                        nil
                        ""))
 
@@ -1017,10 +1038,11 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
         (position    (format-mode-line "%l:%c:%o")))
     (lambda-line-compose (lambda-line-status)
                          buffer-name
-                         (concat "(" mode-name
+                         (concat lambda-line-display-group-start
+                                 mode-name
                                  (when branch
                                    branch)
-                                 ")" )
+                                 lambda-line-display-group-end)
                          (concat
                           ;; Narrowed buffer
                           (when (buffer-narrowed-p)
@@ -1096,7 +1118,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
          (tags (elfeed-entry-tags elfeed-show-entry))
          (tags-str (mapconcat #'symbol-name tags ", "))
          (tag          (if tags
-                           (concat "(" tags-str ")")
+                           (concat lambda-line-display-group-start
+                                   tags-str
+                                   lambda-line-display-group-end)
                          " "))
          (date (seconds-to-time (elfeed-entry-date elfeed-show-entry)))
          (feed (elfeed-entry-feed elfeed-show-entry))
@@ -1109,8 +1133,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
      (lambda-line-truncate title 65)
      tag
      ""
-     (format-time-string "%Y-%m-%d %H:%M:%S" date)
-     )))
+     (format-time-string "%Y-%m-%d %H:%M:%S" date))))
 
 ;;;; Mu4e
 
@@ -1124,8 +1147,11 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   "Return the current mu4e context as a non propertized string."
 
   (if (> (length (mu4e-context-label)) 0)
-      (concat "(" (substring-no-properties (mu4e-context-label) 1 -1) ")")
-    "(none)"))
+      (concat
+       lambda-line-display-group-start
+       (substring-no-properties (mu4e-context-label) 1 -1)
+       lambda-line-display-group-end
+    "(none)")))
 
 (defun lambda-line-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
@@ -1220,7 +1246,9 @@ depending on the version of mu4e."
          (date    (mu4e-message-field msg :date)))
     (lambda-line-compose (lambda-line-status)
                          (or from "")
-                         (concat "(" (lambda-line-truncate (or subject "") 50 "…") ")")
+                         (concat lambda-line-display-group-start
+                                 (lambda-line-truncate (or subject "") 50 "…")
+                                 lambda-line-display-group-end)
                          nil
                          (concat (or (format-time-string mu4e-headers-date-format date) "") " "))))
 
