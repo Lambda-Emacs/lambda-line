@@ -712,7 +712,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
               (propertize (format-time-string lambda-line-time-day-and-date-format))
             (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
         (propertize
-          (format "%s " icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))))))
+          (format " %s " icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))))))
 
 ;;;; Default display
 (defun lambda-line-default-mode ()
@@ -748,9 +748,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
     (lambda-line-compose (lambda-line-status)
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
                          (concat lambda-line-display-group-start mode-name
-                                 (when branch
-                                   branch)
-                                 lambda-line-display-group-end)
+                                 (when branch branch)
+                                 lambda-line-display-group-end
+                                 (lambda-line-time))
+
                          (if lambda-line-syntax
                              (lambda-line-check-syntax) "")
                          (concat
