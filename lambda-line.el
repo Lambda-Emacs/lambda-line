@@ -177,6 +177,22 @@ Negative is downwards."
   :type 'string
   :group 'lambda-line)
 
+(defcustom lambda-line-icon-time nil
+  "When set to non-nil show the time as an icon clock.
+Time info is only shown `display-time-mode' is non-nil"
+  :type 'boolean
+  :group 'lambda-line)
+
+(defcustom lambda-line-time-day-and-date-format " %H:%M %Y-%m-%e "
+  "`format-time-string'."
+  :type 'string
+  :group 'lambda-line)
+
+(defcustom lambda-line-time-format " %H:%M "
+  "`format-time-string'."
+  :type 'string
+  :group 'lambda-line)
+
 (defcustom lambda-line-display-group-start "("
   "Modeline display group start indicator."
   :group 'lambda-line
@@ -686,11 +702,17 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 ;;;; Mode Functions
 (defun lambda-line-time ()
-  (let* ((hour (string-to-number (format-time-string "%I")))
-         (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
-    (concat
-     (propertize (format-time-string " %H:%M ") 'face `(:height 0.9))
-     (propertize (format "%s " icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0)))))
+  "Display the time when `display-time-mode' is non-nil."
+  (when display-time-mode
+    (let* ((hour (string-to-number (format-time-string "%I")))
+           (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
+      (concat
+        (unless lambda-line-icon-time
+          (if display-time-day-and-date
+              (propertize (format-time-string lambda-line-time-day-and-date-format))
+            (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
+        (propertize
+          (format "%s " icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))))))
 
 ;;;; Default display
 (defun lambda-line-default-mode ()
