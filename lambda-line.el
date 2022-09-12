@@ -705,7 +705,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                          (concat lambda-line-display-group-start mode-name
                                  (when branch
                                    branch)
-lambda-line-display-group-end)
+                                 lambda-line-display-group-end)
                          nil
                          ;; Narrowed buffer
                          (if (buffer-narrowed-p)
