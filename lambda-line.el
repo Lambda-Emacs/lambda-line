@@ -627,6 +627,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                               ;; special modes
                               ((derived-mode-p 'term-mode) " >_")
                               ((derived-mode-p 'vterm-mode) " >_")
+                              ((derived-mode-p 'eshell-mode) " λ:")
                               ((derived-mode-p 'Info-mode) " ℹ")
                               ;; otherwise just use rw symbol
                               (t (if (display-graphic-p) lambda-line-gui-rw-symbol
@@ -641,7 +642,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                   ((eq status 'read-write) 'lambda-line-active-status-RW)
                                   ((eq status 'modified)   'lambda-line-active-status-MD)
                                   ((or (derived-mode-p 'term-mode)
-                                       (derived-mode-p 'vterm-mode))
+                                       (derived-mode-p 'vterm-mode)
+                                       (derived-mode-p 'eshell-mode))
                                    'lambda-line-active-status-MD)
                                   ((derived-mode-p 'Info-mode) 'lambda-line-active-status-RO)
                                   (t                       'lambda-line-active))
@@ -650,6 +652,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                 ((eq status 'modified)   'lambda-line-inactive-status-MD)
                                 ((or (derived-mode-p 'term-mode)
                                      (derived-mode-p 'vterm-mode)
+                                     (derived-mode-p 'eshell-mode)
                                      (derived-mode-p 'Info-mode))
                                  'lambda-line-inactive-status-RW)
                                 (t                       'lambda-line-inactive)))))
