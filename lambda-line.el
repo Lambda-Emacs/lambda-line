@@ -1071,7 +1071,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (derived-mode-p 'elfeed-search-mode))
 
 (defun lambda-line-elfeed-search-mode ()
-  (let* ((prefix "ELFEED")
+  (let* ((status  "NEWS")
          (no-database (zerop (elfeed-db-last-update)))
          (update      (> (elfeed-queue-count-total) 0))
 
@@ -1094,7 +1094,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                      ((zerop (elfeed-db-last-update)) "")
                      ((> (elfeed-queue-count-total) 0) "")
                      (t (elfeed-search--count-unread)))))
-    (lambda-line-compose prefix name primary "" secondary)))
+    (lambda-line-compose status name primary nil secondary)))
 
 ;; Elfeed uses header-line, we need to tell it to use our own format
 (defun lambda-line-elfeed-setup-header ()
@@ -1134,6 +1134,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
      tag
      ""
      (format-time-string "%Y-%m-%d %H:%M:%S" date))))
+
 
 ;;;; Mu4e
 
