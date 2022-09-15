@@ -263,8 +263,8 @@ Negative is downwards."
     (ispell-mode            :on-activate lambda-line-ispell-activate
                             :on-deactivate lambda-line-ispell-deactivate)
     (mu4e-mode              :on-activate lambda-line-mu4e-activate
-                            :on-deactivate lambda-line-mu4e-deactivate)
-    )
+                            :on-deactivate lambda-line-mu4e-deactivate))
+
   "Modes to be evalued for modeline.
 KEY mode name, for reference only. Easier to do lookups and/or replacements.
 :MODE-P the function to check if :FORMAT needs to be used, first one wins.
@@ -504,8 +504,8 @@ Otherwise show '-'."
                  (concat
                   ;; Divider
                   (propertize " •" 'face `(:inherit fringe))
-                  (format " %s" project-name)
-                  )))))
+                  (format " %s" project-name))))))
+
      ;; Show branch
      (if vc-mode
          (concat
@@ -533,16 +533,16 @@ Otherwise show '-'."
   (defadvice vc-git-mode-line-string (after plus-minus (file) compile activate)
     "Show the information of git diff in status-line"
     (setq ad-return-value
-	      (concat ad-return-value
-		          (let ((plus-minus (vc-git--run-command-string
-				                     file "diff" "--numstat" "--")))
-		            (if (and plus-minus
-		                     (string-match "^\\([0-9]+\\)\t\\([0-9]+\\)\t" plus-minus))
-		                (concat
-                         " "
-			             (format "+%s" (match-string 1 plus-minus))
-			             (format "-%s" (match-string 2 plus-minus)))
-		              ""))))))
+              (concat ad-return-value
+                          (let ((plus-minus (vc-git--run-command-string
+                                                     file "diff" "--numstat" "--")))
+                            (if (and plus-minus
+                                     (string-match "^\\([0-9]+\\)\t\\([0-9]+\\)\t" plus-minus))
+                                (concat
+                                 " "
+                                     (format "+%s" (match-string 1 plus-minus))
+                                     (format "-%s" (match-string 2 plus-minus)))
+                              ""))))))
 
 ;;;;; Flycheck/Flymake Segment
 (defvar-local lambda-line--flycheck-text nil)
@@ -763,27 +763,27 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-info-breadcrumbs ()
   (let ((nodes (Info-toc-nodes Info-current-file))
         (cnode Info-current-node)
-	    (node Info-current-node)
+        (node Info-current-node)
         (crumbs ())
         (depth Info-breadcrumbs-depth)
-	    line)
+        line)
     (while  (> depth 0)
       (setq node (nth 1 (assoc node nodes)))
       (if node (push node crumbs))
       (setq depth (1- depth)))
     (setq crumbs (cons "Top" (if (member (pop crumbs) '(nil "Top"))
-			                     crumbs (cons nil crumbs))))
+                                 crumbs (cons nil crumbs))))
     (forward-line 1)
     (dolist (node crumbs)
       (let ((text
-	         (if (not (equal node "Top")) node
-	           (format "%s"
-		               (if (stringp Info-current-file)
-			               (file-name-sans-extension
-			                (file-name-nondirectory Info-current-file))
-			             Info-current-file)))))
-	    (setq line (concat line (if (null line) "" " > ")
-                           (if (null node) "..." text)))))
+                 (if (not (equal node "Top")) node
+                   (format "%s"
+                               (if (stringp Info-current-file)
+                                   (file-name-sans-extension
+                                    (file-name-nondirectory Info-current-file))
+                                   Info-current-file)))))
+           (setq line (concat line (if (null line) "" " > ")
+                          (if (null node) "..." text)))))
     (if (and cnode (not (equal cnode "Top")))
         (setq line (concat line (if (null line) "" " > ") cnode)))
     line))
@@ -868,13 +868,13 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-doc-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-	    (mode-name   (lambda-line-mode-name))
-	    (branch      (lambda-line-vc-project-branch))
-	    (page-number (concat
-		              (number-to-string (doc-view-current-page)) "/"
-		              (or (ignore-errors
-			                (number-to-string (doc-view-last-page-number)))
-			              "???"))))
+        (mode-name   (lambda-line-mode-name))
+        (branch      (lambda-line-vc-project-branch))
+        (page-number (concat
+                          (number-to-string (doc-view-current-page)) "/"
+                          (or (ignore-errors
+                                    (number-to-string (doc-view-last-page-number)))
+                              "???"))))
     (lambda-line-compose
      (lambda-line-status)
      buffer-name
@@ -894,19 +894,19 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-pdf-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
-	    (mode-name   (lambda-line-mode-name))
-	    (branch      (lambda-line-vc-project-branch))
-	    (page-number (concat
-		              (number-to-string (eval `(pdf-view-current-page))) "/"
-		              (or (ignore-errors
-			                (number-to-string (pdf-cache-number-of-pages)))
-			              "???"))))
+        (mode-name   (lambda-line-mode-name))
+        (branch      (lambda-line-vc-project-branch))
+        (page-number (concat
+                          (number-to-string (eval `(pdf-view-current-page))) "/"
+                          (or (ignore-errors
+                                    (number-to-string (pdf-cache-number-of-pages)))
+                              "???"))))
     (lambda-line-compose
      (lambda-line-status)
      buffer-name
      (concat lambda-line-display-group-start mode-name
              branch
-	     lambda-line-display-group-end)
+             lambda-line-display-group-end)
      nil
      (concat page-number " "))))
 
@@ -1085,7 +1085,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                             (format "%d jobs pending, %d active"
                                     (- total in-process) in-process)))
                          (t  (let* ((db-time (seconds-to-time (elfeed-db-last-update)))
-                                    (unread ))
+                                    (unread))
                                (cond (elfeed-search-filter-active "")
                                      ((string-match-p "[^ ]" elfeed-search-filter)
                                       elfeed-search-filter)
@@ -1151,7 +1151,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
        lambda-line-display-group-start
        (substring-no-properties (mu4e-context-label) 1 -1)
        lambda-line-display-group-end
-    "(none)")))
+       "(none)")))
 
 (defun lambda-line-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
@@ -1508,6 +1508,6 @@ below or a buffer local variable 'no-mode-line'."
   (run-hooks 'lambda-line-mode-hook))
 
 ;;; Provide:
-  (provide 'lambda-line)
+(provide 'lambda-line)
 
 ;;; lambda-line.el ends here
