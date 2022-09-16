@@ -36,6 +36,7 @@
 
 (require 'face-remap)
 (require 'cl-lib)
+(require 'all-the-icons)
 
 ;;;; Group
 
