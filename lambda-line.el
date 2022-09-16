@@ -205,6 +205,12 @@ Time info is only shown `display-time-mode' is non-nil"
 
 (defcustom lambda-line-mode-formats
   '(;; with :mode-p first
+    (imenu-list-mode        :mode-p lambda-line-imenu-list-mode-p
+                            :format lambda-line-imenu-list-mode)
+    (org-capture-mode       :mode-p lambda-line-org-capture-mode-p
+                            :format lambda-line-org-capture-mode
+                            :on-activate lambda-line-org-capture-activate
+                            :on-deactivate lambda-line-org-capture-deactivate)
     (prog-mode              :mode-p lambda-line-prog-mode-p
                             :format lambda-line-prog-mode
                             :on-activate lambda-line-prog-activate
@@ -221,6 +227,8 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-term-mode)
     (vterm-mode             :mode-p lambda-line-vterm-mode-p
                             :format lambda-line-term-mode)
+    (eshell-mode            :mode-p lambda-line-eshell-mode-p
+                            :format lambda-line-eshell-mode)
     (buffer-menu-mode       :mode-p lambda-line-buffer-menu-mode-p
                             :format lambda-line-buffer-menu-mode
                             :on-activate lambda-line-buffer-menu-activate
@@ -260,10 +268,7 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-mu4e-view-mode)
     (org-agenda-mode        :mode-p lambda-line-org-agenda-mode-p
                             :format lambda-line-org-agenda-mode)
-    (org-capture-mode       :mode-p lambda-line-org-capture-mode-p
-                            :format lambda-line-org-capture-mode
-                            :on-activate lambda-line-org-capture-activate
-                            :on-deactivate lambda-line-org-capture-deactivate)
+
     (org-clock-mode         :mode-p lambda-line-org-clock-mode-p
                             :format lambda-line-org-clock-mode
                             :on-activate lambda-line-org-clock-activate
@@ -595,7 +600,9 @@ Otherwise show '-'."
 
   (let ((read-only  (when (not (or (derived-mode-p 'vterm-mode)
                                    (derived-mode-p 'term-mode)
-                                   (derived-mode-p 'Info-mode)))
+                                   (derived-mode-p 'Info-mode)
+                                   (derived-mode-p 'elfeed-search)
+                                   (derived-mode-p 'elfeed-show)))
                       buffer-read-only))
         (modified    (and buffer-file-name (buffer-modified-p))))
     (cond (modified  'modified)
@@ -636,7 +643,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                               ;; special modes
                               ((derived-mode-p 'term-mode) " >_")
                               ((derived-mode-p 'vterm-mode) " >_")
-                              ((derived-mode-p 'Info-mode) " ?")
+                              ((derived-mode-p 'eshell-mode) " λ:")
+                              ((derived-mode-p 'Info-mode) " ℹ")
                               ;; otherwise just use rw symbol
                               (t (if (display-graphic-p) lambda-line-gui-rw-symbol
                                    lambda-line-tty-rw-symbol))))))
@@ -650,7 +658,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                   ((eq status 'read-write) 'lambda-line-active-status-RW)
                                   ((eq status 'modified)   'lambda-line-active-status-MD)
                                   ((or (derived-mode-p 'term-mode)
-                                       (derived-mode-p 'vterm-mode))
+                                       (derived-mode-p 'vterm-mode)
+                                       (derived-mode-p 'eshell-mode))
                                    'lambda-line-active-status-MD)
                                   ((derived-mode-p 'Info-mode) 'lambda-line-active-status-RO)
                                   (t                       'lambda-line-active))
@@ -659,6 +668,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                 ((eq status 'modified)   'lambda-line-inactive-status-MD)
                                 ((or (derived-mode-p 'term-mode)
                                      (derived-mode-p 'vterm-mode)
+                                     (derived-mode-p 'eshell-mode)
                                      (derived-mode-p 'Info-mode))
                                  'lambda-line-inactive-status-RW)
                                 (t                       'lambda-line-inactive)))))
@@ -805,14 +815,14 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
     (forward-line 1)
     (dolist (node crumbs)
       (let ((text
-                 (if (not (equal node "Top")) node
-                   (format "%s"
-                               (if (stringp Info-current-file)
-                                   (file-name-sans-extension
-                                    (file-name-nondirectory Info-current-file))
-                                   Info-current-file)))))
-           (setq line (concat line (if (null line) "" " > ")
-                          (if (null node) "..." text)))))
+             (if (not (equal node "Top")) node
+               (format "%s"
+                       (if (stringp Info-current-file)
+                           (file-name-sans-extension
+                            (file-name-nondirectory Info-current-file))
+                         Info-current-file)))))
+        (setq line (concat line (if (null line) "" " > ")
+                           (if (null node) "..." text)))))
     (if (and cnode (not (equal cnode "Top")))
         (setq line (concat line (if (null line) "" " > ") cnode)))
     line))
@@ -871,6 +881,25 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                lambda-line-display-group-end)
                        nil
                        (lambda-line-shorten-directory (car (last (split-string default-directory ":"))) 32)))
+
+;;;; Eshell
+;; ---------------------------------------------------------------------
+(defun lambda-line-eshell-mode-p ()
+  (derived-mode-p 'eshell-mode))
+
+(defun lambda-line-eshell-mode ()
+  (lambda-line-compose " >_ "
+                       "Eshell"
+                       ""
+                       ""
+                       (lambda-line-shorten-directory default-directory 32)))
+
+(defun lambda-line-esh-activate ()
+  (with-eval-after-load 'esh-mode
+    (setq eshell-status-in-mode-line nil)))
+
+(defun lambda-line-esh-deactivate ()
+  (custom-reevaluate-setting 'eshell-status-in-mode-line))
 
 ;;;; Messages Buffer Mode
 ;; ---------------------------------------------------------------------
@@ -952,7 +981,21 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
     (lambda-line-compose (lambda-line-status)
                          buffer-name "" nil (concat position lambda-line-hspace))))
 
+;;;; Imenu-List
+(defun lambda-line-imenu-list-mode-p ()
+  (derived-mode-p 'imenu-list-major-mode))
 
+(defun lambda-line-imenu-list-mode ()
+  (let (
+        ;; We take into account the case of narrowed buffers
+        (buffer-name (buffer-name imenu-list--displayed-buffer))
+        (branch      (lambda-line-vc-project-branch))
+        (position    (format-mode-line "%l:%c")))
+    (lambda-line-compose (lambda-line-status)
+                         buffer-name
+                         "(imenu list)"
+                         ""
+                         "")))
 ;;;; Completion
 ;; ---------------------------------------------------------------------
 (defun lambda-line-completion-list-mode-p ()
@@ -1023,7 +1066,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                (org-capture-get :description)
                                lambda-line-display-group-end)
                        nil
-                       ""))
+                       "Finish: C-c C-c, refile: C-c C-w, cancel: C-c C-k "
+                       ))
 
 (defun lambda-line-org-capture-turn-off-header-line ()
   (setq-local header-line-format (default-value 'header-line-format))
@@ -1048,7 +1092,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (lambda-line-compose (lambda-line-status)
                        "Agenda"
                        ""
-                       nil
+                       ""
                        (concat (propertize "◴"
                                            'face 'lambda-line-active-secondary
                                            'display '(raise 0.06))
@@ -1100,7 +1144,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (derived-mode-p 'elfeed-search-mode))
 
 (defun lambda-line-elfeed-search-mode ()
-  (let* ((prefix "ELFEED")
+  (let* ((status  "NEWS")
          (no-database (zerop (elfeed-db-last-update)))
          (update      (> (elfeed-queue-count-total) 0))
 
@@ -1123,7 +1167,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                      ((zerop (elfeed-db-last-update)) "")
                      ((> (elfeed-queue-count-total) 0) "")
                      (t (elfeed-search--count-unread)))))
-    (lambda-line-compose prefix name primary "" secondary)))
+    (lambda-line-compose status name primary nil secondary)))
 
 ;; Elfeed uses header-line, we need to tell it to use our own format
 (defun lambda-line-elfeed-setup-header ()
@@ -1164,6 +1208,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
      ""
      (format-time-string "%Y-%m-%d %H:%M:%S" date))))
 
+
 ;;;; Mu4e
 
 (defun lambda-line-mu4e-last-query ()
@@ -1185,9 +1230,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
 depending on the version of mu4e."
-  (if (string> mu4e-mu-version "1.6.5")
-      mu4e--server-props
-    mu4e~server-props))
+  (if (version< mu4e-mu-version "1.6.0")
+      mu4e~server-props
+    mu4e--server-props))
 
 (defun lambda-line-mu4e-activate ()
   (with-eval-after-load 'mu4e
@@ -1362,15 +1407,6 @@ depending on the version of mu4e."
 (defun lambda-line-elpher-activate ()
   (with-eval-after-load 'elpher
     (setq elpher-use-header nil)))
-
-;;;; Esh Mode
-;; ---------------------------------------------------------------------
-(defun lambda-line-esh-activate ()
-  (with-eval-after-load 'esh-mode
-    (setq eshell-status-in-mode-line nil)))
-
-(defun lambda-line-esh-deactivate ()
-  (custom-reevaluate-setting 'eshell-status-in-mode-line))
 
 ;;;; Ispell Mode
 ;; ---------------------------------------------------------------------
