@@ -2,11 +2,10 @@
 
 ;; Author: Colin McLear
 ;; Maintainer: Colin McLear
-;; Version: 0.1
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "27.1"))
 ;; Homepage: https://github.com/Lambda-Emacs/lambda-line
 ;; Keywords: mode-line faces
-
 
 ;; This file is NOT part of GNU Emacs
 
@@ -190,6 +189,11 @@ Time info is only shown `display-time-mode' is non-nil"
   :group 'lambda-line)
 
 (defcustom lambda-line-time-format " %H:%M "
+  "`format-time-string'."
+  :type 'string
+  :group 'lambda-line)
+
+(defcustom lambda-line-time-icon-format "   %s"
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
@@ -595,6 +599,20 @@ Otherwise show '-'."
       (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
+;; Display-time-mode
+(defun lambda-line-time ()
+  "Display the time when `display-time-mode' is non-nil."
+  (when display-time-mode
+    (let* ((hour (string-to-number (format-time-string "%I")))
+           (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
+      (concat
+        (propertize
+          (format lambda-line-time-icon-format icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))
+        (unless lambda-line-icon-time
+          (if display-time-day-and-date
+              (propertize (format-time-string lambda-line-time-day-and-date-format))
+            (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))))))
+
 ;;;;; Status
 (defun lambda-line-status ()
   "Return buffer status, one of 'read-only, 'modified or 'read-write."
@@ -711,20 +729,6 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
      (propertize " " 'face face-modeline 'display `(space :align-to (- right ,right-len)))
      right)))
 
-;;;; Mode Functions
-(defun lambda-line-time ()
-  "Display the time when `display-time-mode' is non-nil."
-  (when display-time-mode
-    (let* ((hour (string-to-number (format-time-string "%I")))
-           (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
-      (concat
-        (unless lambda-line-icon-time
-          (if display-time-day-and-date
-              (propertize (format-time-string lambda-line-time-day-and-date-format))
-            (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
-        (propertize
-          (format " %s " icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))))))
-
 ;;;; Default display
 (defun lambda-line-default-mode ()
   "Compose the default status line."
@@ -738,13 +742,15 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                  (when branch
                                    branch)
                                  lambda-line-display-group-end)
+
                          nil
                          ;; Narrowed buffer
-                         (if (buffer-narrowed-p)
-                             (concat
-                              (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary))
-                              position " ")
-                           position))))
+                         (concat (if (buffer-narrowed-p)
+                                    (concat
+                                     (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary))
+                                     position " ")
+                                  position)
+                                 (lambda-line-time)))))
 
 ;;;;; Prog Mode
 ;; ---------------------------------------------------------------------
@@ -760,11 +766,11 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
                          (concat lambda-line-display-group-start mode-name
                                  (when branch branch)
-                                 lambda-line-display-group-end
-                                 (lambda-line-time))
+                                 lambda-line-display-group-end)
 
                          (if lambda-line-syntax
                              (lambda-line-check-syntax) "")
+
                          (concat
                           ;; Narrowed buffer
                           (when (buffer-narrowed-p)
@@ -774,7 +780,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                       (boundp 'flymake-mode))
                                   ;; (concat position lambda-line-hspace)
                                   position)
-                            position)))))
+                            position)
+
+                          (lambda-line-time)))))
 
 (defun lambda-line-prog-activate ()
   "Setup flycheck hooks."
@@ -838,7 +846,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                (lambda-line-info-breadcrumbs)
                                lambda-line-display-group-end)
                        nil
-                       ""))
+                       (lambda-line-time)))
 
 (defun lambda-line-info-activate ()
   (if (eq lambda-line-position 'top)
@@ -864,7 +872,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                (file-name-nondirectory shell-file-name)
                                lambda-line-display-group-end)
                        nil
-                       (lambda-line-shorten-directory default-directory 32)))
+                       (concat (lambda-line-shorten-directory default-directory 32)
+                               (lambda-line-time))))
+
 
 ;; ---------------------------------------------------------------------
 
@@ -881,7 +891,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                (lambda-line-get-ssh-host default-directory)
                                lambda-line-display-group-end)
                        nil
-                       (lambda-line-shorten-directory (car (last (split-string default-directory ":"))) 32)))
+                       (concat (lambda-line-shorten-directory (car (last (split-string default-directory ":"))) 32)
+                               (lambda-line-time))))
 
 ;;;; Eshell
 ;; ---------------------------------------------------------------------
@@ -893,7 +904,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                        "Eshell"
                        ""
                        ""
-                       (lambda-line-shorten-directory default-directory 32)))
+                       (concat (lambda-line-shorten-directory default-directory 32)
+                               (lambda-line-time))))
 
 (defun lambda-line-esh-activate ()
   (with-eval-after-load 'esh-mode
@@ -909,7 +921,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-messages-mode ()
   (lambda-line-compose (lambda-line-status)
-                       "*Messages*" "" nil ""))
+                       "*Messages*" "" nil (lambda-line-time)))
 
 ;;;; Message Mode
 ;; ---------------------------------------------------------------------
@@ -918,7 +930,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-message-mode ()
   (lambda-line-compose (lambda-line-status)
-                       "Message" "(Draft)" nil ""))
+                       "Message" "(Draft)" nil (lambda-line-time)))
 
 ;;;; Docview Mode
 ;;---------------------------------------------------------------------
@@ -941,7 +953,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
              branch
              lambda-line-display-group-end)
      nil
-     page-number)))
+     (concat page-number
+             (lambda-line-time)))))
 
 ;;;; PDF View Mode
 ;; ---------------------------------------------------------------------
@@ -967,7 +980,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
              branch
              lambda-line-display-group-end)
      nil
-     (concat page-number " "))))
+     (concat page-number " ") (lambda-line-time))))
 
 ;;;; MenuMode
 
@@ -980,7 +993,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
         (position    (format-mode-line "%l:%c:%o")))
 
     (lambda-line-compose (lambda-line-status)
-                         buffer-name "" nil (concat position lambda-line-hspace))))
+                         buffer-name "" nil (concat position lambda-line-hspace (lambda-line-time)))))
 
 ;;;; Imenu-List
 (defun lambda-line-imenu-list-mode-p ()
@@ -1067,8 +1080,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                (org-capture-get :description)
                                lambda-line-display-group-end)
                        nil
-                       "Finish: C-c C-c, refile: C-c C-w, cancel: C-c C-k "
-                       ))
+                       "Finish: C-c C-c, refile: C-c C-w, cancel: C-c C-k "))
+
 
 (defun lambda-line-org-capture-turn-off-header-line ()
   (setq-local header-line-format (default-value 'header-line-format))
@@ -1164,10 +1177,13 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                      ((string-match-p "[^ ]" elfeed-search-filter)
                                       elfeed-search-filter)
                                      (""))))))
-         (secondary (cond
-                     ((zerop (elfeed-db-last-update)) "")
-                     ((> (elfeed-queue-count-total) 0) "")
-                     (t (elfeed-search--count-unread)))))
+         (secondary (concat
+                     (cond
+                      ((zerop (elfeed-db-last-update)) "")
+                      ((> (elfeed-queue-count-total) 0) "")
+                      (t (elfeed-search--count-unread)))
+                     (lambda-line-time))))
+
     (lambda-line-compose status name primary nil secondary)))
 
 ;; Elfeed uses header-line, we need to tell it to use our own format
@@ -1252,7 +1268,7 @@ depending on the version of mu4e."
                                (plist-get (lambda-line-mu4e-server-props) :doccount))
                        ""
                        nil
-                       " "))
+                       (lambda-line-time)))
 
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-loading-mode-p ()
@@ -1306,10 +1322,11 @@ depending on the version of mu4e."
                          (or (lambda-line-mu4e-quote
                               (lambda-line-mu4e-last-query)) "")
                          nil
-                         (format "[%s] "
+                         (concat
+                          (format "[%s] "
                                  (lambda-line-mu4e-quote
-                                  (mu4e-context-name (mu4e-context-current)))))))
-
+                                  (mu4e-context-name (mu4e-context-current))))
+                          (lambda-line-time)))))
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-view-mode-p ()
   (derived-mode-p 'mu4e-view-mode))
@@ -1342,7 +1359,9 @@ depending on the version of mu4e."
                          buffer-name
                          ""
                          nil
-                         (ein:header-line))))
+                         (concat
+                          (ein:header-line)
+                          (lambda-line-time)))))
 
 ;; since the EIN library itself is constantly re-rendering the notebook, and thus
 ;; re-setting the header-line-format, we cannot use the lambda-line function to set
@@ -1370,7 +1389,12 @@ depending on the version of mu4e."
         (position    (format-mode-line "%l:%c")))
 
     (lambda-line-compose nil
-                         buffer-name "" nil position)))
+                         buffer-name
+                         ""
+                         nil
+                         (concat
+                          position
+                          (lambda-line-time)))))
 
 ;;(defun buffer-menu-mode-header-line ()
 ;;  (face-remap-add-relative
@@ -1403,7 +1427,7 @@ depending on the version of mu4e."
                          sanitized-display-string
                          tls-string
                          nil
-                         "")))
+                         (lambda-line-time))))
 
 (defun lambda-line-elpher-activate ()
   (with-eval-after-load 'elpher
