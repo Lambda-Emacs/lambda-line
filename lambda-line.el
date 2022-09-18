@@ -921,7 +921,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-messages-mode ()
   (lambda-line-compose (lambda-line-status)
-                       "*Messages*" "" nil (lambda-line-time)))
+                       "*Messages*"
+                       ""
+                       ""
+                       (concat "" (lambda-line-time))))
 
 ;;;; Message Mode
 ;; ---------------------------------------------------------------------
