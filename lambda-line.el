@@ -1244,8 +1244,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
       (concat
        lambda-line-display-group-start
        (substring-no-properties (mu4e-context-label) 1 -1)
-       lambda-line-display-group-end
-       "(none)")))
+       lambda-line-display-group-end)
+    "(none)"))
 
 (defun lambda-line-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
