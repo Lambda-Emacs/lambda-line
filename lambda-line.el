@@ -599,19 +599,19 @@ Otherwise show '-'."
       (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
-;; Display-time-mode
+;;;;; Display-time-mode
 (defun lambda-line-time ()
   "Display the time when `display-time-mode' is non-nil."
   (when display-time-mode
     (let* ((hour (string-to-number (format-time-string "%I")))
            (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
       (concat
-        (propertize
-          (format lambda-line-time-icon-format icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))
-        (unless lambda-line-icon-time
-          (if display-time-day-and-date
-              (propertize (format-time-string lambda-line-time-day-and-date-format))
-            (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))))))
+       (propertize
+        (format lambda-line-time-icon-format icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))
+       (unless lambda-line-icon-time
+         (if display-time-day-and-date
+             (propertize (format-time-string lambda-line-time-day-and-date-format))
+           (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
@@ -746,10 +746,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                          nil
                          ;; Narrowed buffer
                          (concat (if (buffer-narrowed-p)
-                                    (concat
-                                     (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary))
-                                     position " ")
-                                  position)
+                                     (concat
+                                      (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary))
+                                      position " ")
+                                   position)
                                  (lambda-line-time)))))
 
 ;;;;; Prog Mode
@@ -972,18 +972,18 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
         (mode-name   (lambda-line-mode-name))
         (branch      (lambda-line-vc-project-branch))
         (page-number (concat
-                          (number-to-string (eval `(pdf-view-current-page))) "/"
-                          (or (ignore-errors
-                                    (number-to-string (pdf-cache-number-of-pages)))
-                              "???"))))
+                      (number-to-string (eval `(pdf-view-current-page))) "/"
+                      (or (ignore-errors
+                            (number-to-string (pdf-cache-number-of-pages)))
+                          "???"))))
     (lambda-line-compose
      (lambda-line-status)
      buffer-name
      (concat lambda-line-display-group-start mode-name
              branch
              lambda-line-display-group-end)
-     nil
-     (concat page-number " ") (lambda-line-time))))
+     ""
+     (concat page-number " " (lambda-line-time)))))
 
 ;;;; MenuMode
 
