@@ -622,8 +622,8 @@ Otherwise show '-'."
        (concat
          (unless lambda-line-icon-time
            (if display-time-day-and-date
-                (format-time-string lambda-line-time-day-and-date-format)
-              (format-time-string lambda-line-time-format)))
+                (propertize (format-time-string lambda-line-time-day-and-date-format))
+              (propertize (format-time-string lambda-line-time-format))))
          (propertize
            (format lambda-line-time-icon-format (char-to-string time-unicode))
            'face lambda-line-clockface
