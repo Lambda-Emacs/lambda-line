@@ -618,7 +618,8 @@ Otherwise show '-'."
               (propertize (format-time-string lambda-line-time-day-and-date-format))
             (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
         (propertize
-          (format lambda-line-time-icon-format (char-to-string time-unicode) 'face `(:height 1.5 :family "ClockFace") 'display '(raise 0)))))))
+          (format lambda-line-time-icon-format (char-to-string time-unicode))
+          'face `(:height 1.5 :family "ClockFace") 'display '(raise 0))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
