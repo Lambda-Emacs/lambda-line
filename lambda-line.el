@@ -183,17 +183,17 @@ Time info is only shown `display-time-mode' is non-nil"
   :type 'boolean
   :group 'lambda-line)
 
-(defcustom lambda-line-time-day-and-date-format " %H:%M %Y-%m-%e "
+(defcustom lambda-line-time-day-and-date-format "  %H:%M %Y-%m-%e "
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
 
-(defcustom lambda-line-time-format " %H:%M "
+(defcustom lambda-line-time-format "  %H:%M "
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
 
-(defcustom lambda-line-time-icon-format "   %s"
+(defcustom lambda-line-time-icon-format "%s"
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
@@ -599,19 +599,26 @@ Otherwise show '-'."
       (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
-;;;;; Display-time-mode
+;; Display-time-mode
+(defun lambda-line-clockface-icons-unicode (hours minutes)
+  "Return ClockFace icon unicode for HOURS and MINUTES."
+  (let* ((minute (- minutes (% minutes 5)))
+         (offset (+ (* (% hours 12) 12) (* 12 (/ minute 60)))))
+       (+ offset #xE800)))
+
 (defun lambda-line-time ()
   "Display the time when `display-time-mode' is non-nil."
   (when display-time-mode
-    (let* ((hour (string-to-number (format-time-string "%I")))
-           (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
+    (let* ((time-unicode (cl-destructuring-bind
+                             (_ _ hour minute &rest n)
+                             (decode-time) (lambda-line-clockface-icons-unicode hour minute))))
       (concat
-       (propertize
-        (format lambda-line-time-icon-format icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))
-       (unless lambda-line-icon-time
-         (if display-time-day-and-date
-             (propertize (format-time-string lambda-line-time-day-and-date-format))
-           (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))))))
+        (unless lambda-line-icon-time
+          (if display-time-day-and-date
+              (propertize (format-time-string lambda-line-time-day-and-date-format))
+            (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
+        (propertize
+          (format lambda-line-time-icon-format (char-to-string time-unicode) 'face `(:height 1.2 :family "ClockFace") 'display '(raise -0.8)))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
@@ -729,6 +736,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
      (propertize " " 'face face-modeline 'display `(space :align-to (- right ,right-len)))
      right)))
 
+;;;; Mode Functions
 ;;;; Default display
 (defun lambda-line-default-mode ()
   "Compose the default status line."
