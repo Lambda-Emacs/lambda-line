@@ -420,12 +420,6 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   "Modeline face for inactive MODIFIED element."
   :group 'lambda-line-inactive)
 
-;;;;; Clock Faces
-
-(defface lambda-line-clockface
-  '((t (:family "ClockFace" :height 1.2)))
-  "Modeline face for clockface `display-time'."
-  :group 'lambda-line)
 
 ;;;;; Bell Faces
 
@@ -622,12 +616,10 @@ Otherwise show '-'."
        (concat
          (unless lambda-line-icon-time
            (if display-time-day-and-date
-                (format-time-string lambda-line-time-day-and-date-format)
-              (format-time-string lambda-line-time-format)))
+               (propertize (format-time-string lambda-line-time-day-and-date-format))
+             (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
          (propertize
-           (format lambda-line-time-icon-format (char-to-string time-unicode))
-           'face lambda-line-clockface
-           'display '(raise -0.160))))))
+           (format lambda-line-time-icon-format (char-to-string time-unicode) 'face `(:height 1.5 :family "ClockFace") 'display '(raise -0.40)))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
