@@ -604,7 +604,7 @@ Otherwise show '-'."
   "Return ClockFace icon unicode for HOURS and MINUTES."
   (let* ((minute (- minutes (% minutes 5)))
          (offset (+ (* (% hours 12) 12) (* 12 (/ minute 60)))))
-       (+ offset #xE800)))
+       (+ offset #xF0000)))
 
 (defun lambda-line-time ()
   "Display the time when `display-time-mode' is non-nil."
@@ -619,7 +619,7 @@ Otherwise show '-'."
             (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
         (propertize
           (format lambda-line-time-icon-format (char-to-string time-unicode))
-          'face `(:height 1.5 :family "ClockFace") 'display '(raise 0))))))
+          'face `(:height 1 :family "ClockFace") 'display '(raise 0))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
