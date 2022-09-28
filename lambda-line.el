@@ -615,16 +615,8 @@ Otherwise show '-'."
   "Display the time when `display-time-mode' is non-nil."
   (when display-time-mode
     (let* ((time-unicode
-            (cl-destructuring-bind (_ _ hour minute &rest n) (decode-time)
+            (cl-destructuring-bind (_ minute hour &rest n) (decode-time)
               (lambda-line-clockface-icons-unicode hour minute))))
-      ;(unless (string-match-p "ClockFace"(pp-to-string (fontset-info "fontset-default")))
-       ; (set-fontset-font
-       ;  "fontset-default"
-       ;  (cons (decode-char 'ucs #xF0000)
-       ;        (decode-char 'ucs #xF008F))
-       ;  "ClockFace") 
-        ;)
-
       (concat
         (unless lambda-line-icon-time
           (if display-time-day-and-date
