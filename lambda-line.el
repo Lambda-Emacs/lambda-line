@@ -617,12 +617,13 @@ Otherwise show '-'."
     (let* ((time-unicode
             (cl-destructuring-bind (_ _ hour minute &rest n) (decode-time)
               (lambda-line-clockface-icons-unicode hour minute))))
-      (unless (string-match-p "ClockFace"(pp-to-string (fontset-info "fontset-default")))
+      ;(unless (string-match-p "ClockFace"(pp-to-string (fontset-info "fontset-default")))
         (set-fontset-font
          "fontset-default"
          (cons (decode-char 'ucs #xF0000)
                (decode-char 'ucs #xF008F))
-         "ClockFace"))
+         "ClockFace") 
+        ;)
 
       (concat
         (unless lambda-line-icon-time
