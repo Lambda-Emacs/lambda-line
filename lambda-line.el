@@ -618,6 +618,10 @@ Otherwise show '-'."
                              (_ _ hour minute &rest n)
                              (decode-time)
                            (lambda-line-clockface-icons-unicode hour minute))))
+      (set-fontset-font "fontset-default"
+                      (cons (decode-char 'ucs #xF0000)
+                            (decode-char 'ucs #xF008F))
+                      "ClockFace")
       (concat
         (unless lambda-line-icon-time
           (if display-time-day-and-date
