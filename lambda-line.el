@@ -600,10 +600,15 @@ Otherwise show '-'."
     lambda-line--flycheck-text))
 
 ;; Display-time-mode
+;;; May need to deal with Fontsets
+
+(defface lambda-line-clockface `((t (:family "ClockFace")))
+  "ClockFace font used to display analog time.")
+
 (defun lambda-line-clockface-icons-unicode (hours minutes)
   "Return ClockFace icon unicode for HOURS and MINUTES."
   (let* ((minute (- minutes (% minutes 5)))
-         (offset (+ (* (% hours 12) 12) (* 12 (/ minute 60)))))
+         (offset (round (+ (* (% hours 12) 12) (* 12 (/ minute 60.0))))))
        (+ offset #xF0000)))
 
 (defun lambda-line-time ()
@@ -611,7 +616,8 @@ Otherwise show '-'."
   (when display-time-mode
     (let* ((time-unicode (cl-destructuring-bind
                              (_ _ hour minute &rest n)
-                             (decode-time) (lambda-line-clockface-icons-unicode hour minute))))
+                             (decode-time)
+                           (lambda-line-clockface-icons-unicode hour minute))))
       (concat
         (unless lambda-line-icon-time
           (if display-time-day-and-date
@@ -619,7 +625,7 @@ Otherwise show '-'."
             (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
         (propertize
           (format lambda-line-time-icon-format (char-to-string time-unicode))
-          'face `(:height 1 :family "ClockFace") 'display '(raise 0))))))
+          'face 'lambda-line-clockface 'display '(raise 0))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
