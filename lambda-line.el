@@ -600,20 +600,6 @@ Otherwise show '-'."
     lambda-line--flycheck-text))
 
 ;; Display-time-mode
-;;; May need to deal with Fontsets
-
-(defface lambda-line-clockface `((t (:family "ClockFace")))
-  "ClockFace font used to display analog time.")
-
-(defface lambda-line-clockface-solid `((t (:family "ClockFaceSolid")))
-  "ClockFace font used to display analog time.")
-
-(defface lambda-line-clockface-rect `((t (:family "ClockFaceRect")))
-  "ClockFace font used to display analog time.")
-
-(defface lambda-line-clockface-rect-solid `((t (:family "ClockFaceRectSolid")))
-  "ClockFace font used to display analog time.")
-
 (defun lambda-line-install-clockface-fonts ()
   "Install ClockFace fonts on the local system.
 
@@ -672,20 +658,25 @@ Optionally use a VARIANT."
           (decode-char 'ucs #xF008F))
     (format "ClockFace%s" (or variant ""))))
 
-(lambda-line-clockface-update-fontset "Rect")
-(lambda-line-clockface-update-fontset "RectSolid")
-(lambda-line-clockface-update-fontset "Solid")
-(lambda-line-clockface-update-fontset)
+;; Usage example for testing
+;; - exal each one after font installation to test.
+;;
+;; [x] (lambda-line-clockface-update-fontset)
+;; [x] (lambda-line-clockface-update-fontset "Rect")
+;; [x] (lambda-line-clockface-update-fontset "RectSolid")
+;; [x] (lambda-line-clockface-update-fontset "Solid")
 
-(defun lambda-line-setup-clockface-icons ()
-  "Add clockface unicode icons into the default fontset."
-  (interactive)
-  (unless (find-font (font-spec :name "ClockFace"))
-    (when
-      (y-or-n-p "Install ClockFace fonts?")
-      (lambda-line-install-clockface-fonts)))
-  (when (find-font (font-spec :name "ClockFace"))
-    (lambda-line-clockface-update-fontset)))
+;; Need to add some note about Doom Emacs font-set modification for the user:
+;;
+;; E.g.
+;;
+;; Doom Emacs will reset fontset-default when fonts are resized
+;; (e.g. after `doom/increase-font-size' or `doom/decrease-font-size')
+;;
+;; So it's necessary to use `lambda-line-clockface-update-fontset' after such events have
+;; completed.
+;;
+;; (I haven't found a working solution, i.e. using the Doom hook `after-setting-font-hook' doesn't work.)
 
 (defun lambda-line-clockface-icons-unicode (hours minutes)
   "Return ClockFace icon unicode for HOURS and MINUTES."
@@ -705,8 +696,8 @@ Optionally use a VARIANT."
               (propertize (format-time-string lambda-line-time-day-and-date-format))
             (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
         (propertize
-          (format lambda-line-time-icon-format (char-to-string time-unicode))
-          'face 'lambda-line-clockface-solid 'display '(raise 0))))))
+          (format lambda-line-time-icon-format (char-to-string time-unicode)
+           'display '(raise 0)))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
