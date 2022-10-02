@@ -605,6 +605,88 @@ Otherwise show '-'."
 (defface lambda-line-clockface `((t (:family "ClockFace")))
   "ClockFace font used to display analog time.")
 
+(defface lambda-line-clockface-solid `((t (:family "ClockFaceSolid")))
+  "ClockFace font used to display analog time.")
+
+(defface lambda-line-clockface-rect `((t (:family "ClockFaceRect")))
+  "ClockFace font used to display analog time.")
+
+(defface lambda-line-clockface-rect-solid `((t (:family "ClockFaceRectSolid")))
+  "ClockFace font used to display analog time.")
+
+(defun lambda-line-install-clockface-fonts ()
+  "Install ClockFace fonts on the local system.
+
+Thanks to the Doom Emacs project, for the basis of this
+cross-platform font dowload/install code."
+  (interactive)
+  (let ((on-mac     (eq system-type 'darwin))
+        (on-linux   (memq system-type '(gnu gnu/linux gnu/kfreebsd berkeley-unix)))
+        (on-windows (memq system-type '(cygwin windows-nt ms-dos)))
+        (name "ClockFace")
+        (url-format "https://ocodo.github.io/ClockFace-font/%s")
+        (fonts-list '("ClockFace-Regular.ttf"
+                      "ClockFaceRect-Regular.ttf"
+                      "ClockFaceSolid-Regular.ttf"
+                      "ClockFaceRectSolid-Regular.ttf")))
+    (unless (yes-or-no-p
+              (format
+               "Download%sthe ClockFace fonts, continue?"
+               (if on-windows
+                   " "
+                 " and install ")))
+      (user-error "Aborted Download of ClockFace fonts"))
+    (let* ((font-dest
+            (cond (on-linux
+                   (expand-file-name
+                    "fonts/" (or (getenv "XDG_DATA_HOME")
+                                 "~/.local/share")))
+                  (on-mac
+                   (expand-file-name "~/Library/Fonts/"))))
+           (known-dest-p (stringp font-dest))
+           (font-dest (or font-dest (read-directory-name "Font installation directory: " "~/"))))
+      (unless (file-directory-p font-dest)
+        (mkdir font-dest t))
+      (dolist (font fonts-list)
+        (url-copy-file (format url-format font)
+                       (expand-file-name font font-dest)
+                       t))
+      (when known-dest-p
+        (message "Font downloaded, updating font cache... Using <fc-cache -f -v> ")
+        (shell-command-to-string "fc-cache -f -v"))
+      (if on-windows
+          (when (y-or-n-p "The %S font was downloaded, Windows users must install manually.\n\nOpen windows explorer?")
+            (call-process "explorer.exe" nil nil nil font-dest))
+        (message "Successfully %s %S fonts to %S!"
+                 (if known-dest-p
+                     "installed"
+                   "downloaded")
+                 name font-dest)))))
+
+(defun lambda-line-clockface-update-fontset (&optional variant)
+  "Use a ClockFace font for unicode #xF0000..F008F.
+Optionally use a VARIANT."
+  (set-fontset-font
+    "fontset-default"
+    (cons (decode-char 'ucs #xF0000)
+          (decode-char 'ucs #xF008F))
+    (format "ClockFace%s" (or variant ""))))
+
+(lambda-line-clockface-update-fontset "Rect")
+(lambda-line-clockface-update-fontset "RectSolid")
+(lambda-line-clockface-update-fontset "Solid")
+(lambda-line-clockface-update-fontset)
+
+(defun lambda-line-setup-clockface-icons ()
+  "Add clockface unicode icons into the default fontset."
+  (interactive)
+  (unless (find-font (font-spec :name "ClockFace"))
+    (when
+      (y-or-n-p "Install ClockFace fonts?")
+      (lambda-line-install-clockface-fonts)))
+  (when (find-font (font-spec :name "ClockFace"))
+    (lambda-line-clockface-update-fontset)))
+
 (defun lambda-line-clockface-icons-unicode (hours minutes)
   "Return ClockFace icon unicode for HOURS and MINUTES."
   (let* ((minute (- minutes (% minutes 5)))
@@ -624,7 +706,7 @@ Otherwise show '-'."
             (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
         (propertize
           (format lambda-line-time-icon-format (char-to-string time-unicode))
-          'face 'lambda-line-clockface 'display '(raise 0))))))
+          'face 'lambda-line-clockface-solid 'display '(raise 0))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
