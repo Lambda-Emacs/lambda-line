@@ -599,7 +599,7 @@ Otherwise show '-'."
       (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
-;; Display-time-mode
+;;;;; Display-time-mode
 (defun lambda-line-install-clockface-fonts ()
   "Install ClockFace fonts on the local system.
 
@@ -616,11 +616,11 @@ cross-platform font dowload/install code."
                       "ClockFaceSolid-Regular.ttf"
                       "ClockFaceRectSolid-Regular.ttf")))
     (unless (yes-or-no-p
-              (format
-               "Download%sthe ClockFace fonts, continue?"
-               (if on-windows
-                   " "
-                 " and install ")))
+             (format
+              "Download%sthe ClockFace fonts, continue?"
+              (if on-windows
+                  " "
+                " and install ")))
       (user-error "Aborted Download of ClockFace fonts"))
     (let* ((font-dest
             (cond (on-linux
@@ -648,6 +648,7 @@ cross-platform font dowload/install code."
                      "installed"
                    "downloaded")
                  name font-dest)))))
+
 (defun lambda-line-clockface-select-font ()
   "Select clockface icon font."
   (interactive)
@@ -657,7 +658,7 @@ cross-platform font dowload/install code."
                  "ClockFaceSolid"
                  "ClockFaceRect"
                  "ClockFaceRectSolid"))))
-   (lambda-line--clockface-update-fontset font)))
+    (lambda-line--clockface-update-fontset font)))
 
 (defun lambda-line--clockface-update-fontset (&optional font)
   "Use ClockFace font for unicode #xF0000..F008F.
