@@ -648,23 +648,34 @@ cross-platform font dowload/install code."
                      "installed"
                    "downloaded")
                  name font-dest)))))
+(defun lambda-line-clockface-select-font ()
+  "Select clockface icon font."
+  (interactive)
+  (let ((font (completing-read
+               "Select clockface icon font: "
+               '("ClockFace"
+                 "ClockFaceSolid"
+                 "ClockFaceRect"
+                 "ClockFaceRectSolid"))))
+   (lambda-line--clockface-update-fontset font)))
 
-(defun lambda-line-clockface-update-fontset (&optional variant)
-  "Use a ClockFace font for unicode #xF0000..F008F.
-Optionally use a VARIANT."
+(defun lambda-line--clockface-update-fontset (&optional font)
+  "Use ClockFace font for unicode #xF0000..F008F.
+Optionally use another clockface font."
   (set-fontset-font
     "fontset-default"
     (cons (decode-char 'ucs #xF0000)
           (decode-char 'ucs #xF008F))
-    (format "ClockFace%s" (or variant ""))))
+    (or font "ClockFace")))
 
 ;; Usage example for testing
 ;; - exal each one after font installation to test.
+;; (uses the complete font name now)
 ;;
-;; [x] (lambda-line-clockface-update-fontset)
-;; [x] (lambda-line-clockface-update-fontset "Rect")
-;; [x] (lambda-line-clockface-update-fontset "RectSolid")
-;; [x] (lambda-line-clockface-update-fontset "Solid")
+;; [x] (lambda-line-clockface-update-fontset "ClockFace")
+;; [x] (lambda-line-clockface-update-fontset "ClockFaceRect")
+;; [x] (lambda-line-clockface-update-fontset "ClockFaceRectSolid")
+;; [x] (lambda-line-clockface-update-fontset "ClockFaceSolid")
 
 ;; Need to add some note about Doom Emacs font-set modification for the user:
 ;;
