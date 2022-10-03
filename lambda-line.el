@@ -183,17 +183,17 @@ Time info is only shown `display-time-mode' is non-nil"
   :type 'boolean
   :group 'lambda-line)
 
-(defcustom lambda-line-time-day-and-date-format " %H:%M %Y-%m-%e "
+(defcustom lambda-line-time-day-and-date-format "  %H:%M %Y-%m-%e "
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
 
-(defcustom lambda-line-time-format " %H:%M "
+(defcustom lambda-line-time-format "  %H:%M "
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
 
-(defcustom lambda-line-time-icon-format "   %s"
+(defcustom lambda-line-time-icon-format "%s"
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
@@ -599,19 +599,116 @@ Otherwise show '-'."
       (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
-;;;;; Display-time-mode
+;; Display-time-mode
+(defun lambda-line-install-clockface-fonts ()
+  "Install ClockFace fonts on the local system.
+
+Thanks to the Doom Emacs project, for the basis of this
+cross-platform font dowload/install code."
+  (interactive)
+  (let ((on-mac     (eq system-type 'darwin))
+        (on-linux   (memq system-type '(gnu gnu/linux gnu/kfreebsd berkeley-unix)))
+        (on-windows (memq system-type '(cygwin windows-nt ms-dos)))
+        (name "ClockFace")
+        (url-format "https://ocodo.github.io/ClockFace-font/%s")
+        (fonts-list '("ClockFace-Regular.ttf"
+                      "ClockFaceRect-Regular.ttf"
+                      "ClockFaceSolid-Regular.ttf"
+                      "ClockFaceRectSolid-Regular.ttf")))
+    (unless (yes-or-no-p
+              (format
+               "Download%sthe ClockFace fonts, continue?"
+               (if on-windows
+                   " "
+                 " and install ")))
+      (user-error "Aborted Download of ClockFace fonts"))
+    (let* ((font-dest
+            (cond (on-linux
+                   (expand-file-name
+                    "fonts/" (or (getenv "XDG_DATA_HOME")
+                                 "~/.local/share")))
+                  (on-mac
+                   (expand-file-name "~/Library/Fonts/"))))
+           (known-dest-p (stringp font-dest))
+           (font-dest (or font-dest (read-directory-name "Font installation directory: " "~/"))))
+      (unless (file-directory-p font-dest)
+        (mkdir font-dest t))
+      (dolist (font fonts-list)
+        (url-copy-file (format url-format font)
+                       (expand-file-name font font-dest)
+                       t))
+      (when known-dest-p
+        (message "Font downloaded, updating font cache... Using <fc-cache -f -v> ")
+        (shell-command-to-string "fc-cache -f -v"))
+      (if on-windows
+          (when (y-or-n-p "The %S font was downloaded, Windows users must install manually.\n\nOpen windows explorer?")
+            (call-process "explorer.exe" nil nil nil font-dest))
+        (message "Successfully %s %S fonts to %S!"
+                 (if known-dest-p
+                     "installed"
+                   "downloaded")
+                 name font-dest)))))
+(defun lambda-line-clockface-select-font ()
+  "Select clockface icon font."
+  (interactive)
+  (let ((font (completing-read
+               "Select clockface icon font: "
+               '("ClockFace"
+                 "ClockFaceSolid"
+                 "ClockFaceRect"
+                 "ClockFaceRectSolid"))))
+   (lambda-line--clockface-update-fontset font)))
+
+(defun lambda-line--clockface-update-fontset (&optional font)
+  "Use ClockFace font for unicode #xF0000..F008F.
+Optionally use another clockface font."
+  (set-fontset-font
+    "fontset-default"
+    (cons (decode-char 'ucs #xF0000)
+          (decode-char 'ucs #xF008F))
+    (or font "ClockFace")))
+
+;; Usage example for testing
+;; - exal each one after font installation to test.
+;; (uses the complete font name now)
+;;
+;; [x] (lambda-line-clockface-update-fontset "ClockFace")
+;; [x] (lambda-line-clockface-update-fontset "ClockFaceRect")
+;; [x] (lambda-line-clockface-update-fontset "ClockFaceRectSolid")
+;; [x] (lambda-line-clockface-update-fontset "ClockFaceSolid")
+
+;; Need to add some note about Doom Emacs font-set modification for the user:
+;;
+;; E.g.
+;;
+;; Doom Emacs will reset fontset-default when fonts are resized
+;; (e.g. after `doom/increase-font-size' or `doom/decrease-font-size')
+;;
+;; So it's necessary to use `lambda-line-clockface-update-fontset' after such events have
+;; completed.
+;;
+;; (I haven't found a working solution, i.e. using the Doom hook `after-setting-font-hook' doesn't work.)
+
+(defun lambda-line-clockface-icons-unicode (hours minutes)
+  "Return ClockFace icon unicode for HOURS and MINUTES."
+  (let* ((minute (- minutes (% minutes 5)))
+         (offset (round (+ (* (% hours 12) 12) (* 12 (/ minute 60.0))))))
+       (+ offset #xF0000)))
+
 (defun lambda-line-time ()
   "Display the time when `display-time-mode' is non-nil."
   (when display-time-mode
-    (let* ((hour (string-to-number (format-time-string "%I")))
-           (icon (all-the-icons-wicon (format "time-%s" hour) :height 1.3 :v-adjust 0.0)))
+    (let* ((time-unicode
+            (cl-destructuring-bind (_ minute hour &rest n) (decode-time)
+              (lambda-line-clockface-icons-unicode hour minute))))
       (concat
-       (propertize
-        (format lambda-line-time-icon-format icon) 'face `(:height 1.0 :family ,(all-the-icons-wicon-family)) 'display '(raise -0.0))
-       (unless lambda-line-icon-time
-         (if display-time-day-and-date
-             (propertize (format-time-string lambda-line-time-day-and-date-format))
-           (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))))))
+        (unless lambda-line-icon-time
+          (if display-time-day-and-date
+              (propertize (format-time-string lambda-line-time-day-and-date-format))
+            (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
+        (propertize
+          (format lambda-line-time-icon-format (char-to-string time-unicode)
+           'display '(raise 0)))))))
 
 ;;;;; Status
 (defun lambda-line-status ()
@@ -729,6 +826,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
      (propertize " " 'face face-modeline 'display `(space :align-to (- right ,right-len)))
      right)))
 
+;;;; Mode Functions
 ;;;; Default display
 (defun lambda-line-default-mode ()
   "Compose the default status line."
