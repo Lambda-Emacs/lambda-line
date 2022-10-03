@@ -658,16 +658,16 @@ cross-platform font dowload/install code."
                  "ClockFaceSolid"
                  "ClockFaceRect"
                  "ClockFaceRectSolid"))))
-    (lambda-line--clockface-update-fontset font)))
+    (lambda-line-clockface-update-fontset font)))
 
-(defun lambda-line--clockface-update-fontset (&optional font)
+(defun lambda-line-clockface-update-fontset (&optional font)
   "Use ClockFace font for unicode #xF0000..F008F.
 Optionally use another clockface font."
   (set-fontset-font
-    "fontset-default"
-    (cons (decode-char 'ucs #xF0000)
-          (decode-char 'ucs #xF008F))
-    (or font "ClockFace")))
+   "fontset-default"
+   (cons (decode-char 'ucs #xF0000)
+         (decode-char 'ucs #xF008F))
+   (or font "ClockFace")))
 
 ;; Usage example for testing
 ;; - exal each one after font installation to test.
