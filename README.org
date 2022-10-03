@@ -35,7 +35,8 @@ Here's a basic way of setting it up using [[https://github.com/jwiegley/use-pack
   (use-package lambda-line
     :straight (:type git :host github :repo "lambda-emacs/lambda-line") 
     :custom
-    (lambda-line-icon-time t) ;; requires all-the-icons
+    (lambda-line-icon-time t) ;; requires ClockFace font (see below)
+    (lambda-line-clockface-update-fontset "ClockFaceRect") ;; set clock icon
     (lambda-line-position 'top) ;; Set position of status-line 
     (lambda-line-abbrev t) ;; abbreviate major modes
     (lambda-line-hspace "  ")  ;; add some cushion
@@ -78,8 +79,10 @@ Lambda-line has a lot of different options for customization. Please see
       t 'symbol "Symbola" nil)))
         #+end_src
 - Abbreviate major modes with =lambda-line-abbrev=.
-- Show current time (via dynamic svg icon); note that time info is only shown
-  `display-time-mode' is non-nil.
+- Show current time (via dynamic svg icon)
+   + Note that time info is only shown when `display-time-mode' is non-nil.
+   + The time icon uses a specific font. If you install [[https://github.com/ocodo/ClockFace-font][ClockFace Fonts]] the time can be displayed using those icon fonts. You can download the font within Emacs via =M-x lambda-line-install-clockface-fonts=.
+   + You can choose which time icon you'd prefer in one of two ways. The first is interactively, via =M-x lambda-line-clockface-select-font=. The second is to set it programmatically in your config for the specific font using the function =(lambda-line-clockface-update-fontset FONT)=; e.g. =(lambda-line-clockface-update-fontset "ClockFaceRect")=. 
 - Show both vc project and branch in the modeline
 - Show the diff in the status-line with =lambda-line-git-diff-mode-line=.
 - Set the symbol for vc project buffers with =lambda-line-vc-symbol=.
