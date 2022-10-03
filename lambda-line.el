@@ -193,7 +193,7 @@ Time info is only shown `display-time-mode' is non-nil"
   :type 'string
   :group 'lambda-line)
 
-(defcustom lambda-line-time-icon-format "%s"
+(defcustom lambda-line-time-icon-format " %s"
   "`format-time-string'."
   :type 'string
   :group 'lambda-line)
