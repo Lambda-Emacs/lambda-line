@@ -79,7 +79,7 @@ Lambda-line has a lot of different options for customization. Please see
       t 'symbol "Symbola" nil)))
         #+end_src
 - Abbreviate major modes with =lambda-line-abbrev=.
-- Show current time (via dynamic svg icon)
+- Show current time (via dynamic icon font)
    + Note that time info is only shown when `display-time-mode' is non-nil.
    + The time icon uses a specific font. If you install [[https://github.com/ocodo/ClockFace-font][ClockFace Fonts]] the time can be displayed using those icon fonts. You can download the font within Emacs via =M-x lambda-line-install-clockface-fonts=.
    + You can choose which time icon you'd prefer in one of two ways. The first is interactively, via =M-x lambda-line-clockface-select-font=. The second is to set it programmatically in your config for the specific font using the function =(lambda-line-clockface-update-fontset FONT)=; e.g. =(lambda-line-clockface-update-fontset "ClockFaceRect")=. 
