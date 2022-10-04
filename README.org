@@ -80,9 +80,12 @@ Lambda-line has a lot of different options for customization. Please see
         #+end_src
 - Abbreviate major modes with =lambda-line-abbrev=.
 - Show current time (via dynamic icon font)
-   + Note that time info is only shown when `display-time-mode' is non-nil.
-   + The time icon uses a specific font. If you install [[https://github.com/ocodo/ClockFace-font][ClockFace Fonts]] the time can be displayed using those icon fonts. You can download the font within Emacs via =M-x lambda-line-install-clockface-fonts=.
-   + You can choose which time icon you'd prefer in one of two ways. The first is interactively, via =M-x lambda-line-clockface-select-font=. The second is to set it programmatically in your config for the specific font using the function =(lambda-line-clockface-update-fontset FONT)=; e.g. =(lambda-line-clockface-update-fontset "ClockFaceRect")=. 
+   + Note that time is only shown when =display-time-mode= is non-nil.
+   + The time icon uses a specific set of fonts. Install [[https://github.com/ocodo/ClockFace-font][ClockFace Fonts]] and the time will be displayed using these fonts. You can download and install the fonts within Emacs via =M-x lambda-line-install-clockface-fonts=.
+   + You can choose which clock icon you'd prefer by interactively calling, via =M-x lambda-line-clockface-select-font=. To set it programmatically in your config using the function =(lambda-line-clockface-update-fontset FONT)=; e.g. =(lambda-line-clockface-update-fontset "ClockFaceRect")=.
+       + Available styles are =ClockFace=, =ClockFaceSolid=, =ClockFaceRect=, =ClockFaceRectSolid=
+   + To display time as only an icon, set =lambda-line-icon-time= to =t=. When set to nil, the icon clock and text time will be displayed.
+   
 - Show both vc project and branch in the modeline
 - Show the diff in the status-line with =lambda-line-git-diff-mode-line=.
 - Set the symbol for vc project buffers with =lambda-line-vc-symbol=.
