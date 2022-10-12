@@ -257,6 +257,10 @@ Time info is only shown `display-time-mode' is non-nil"
     (elpher-mode            :mode-p lambda-line-elpher-mode-p
                             :format lambda-line-elpher-mode
                             :on-activate lambda-line-elpher-activate)
+    (help-mode              :mode-p lambda-line-help-mode-p
+                            :format lambda-line-help-mode)
+    (helpful-mode           :mode-p lambda-line-helpful-mode-p
+                            :format lambda-line-help-mode)
     (info-mode              :mode-p lambda-line-info-mode-p
                             :format lambda-line-info-mode
                             :on-activate lambda-line-info-activate
@@ -718,6 +722,8 @@ Optionally use another clockface font."
   (let ((read-only  (when (not (or (derived-mode-p 'vterm-mode)
                                    (derived-mode-p 'term-mode)
                                    (derived-mode-p 'Info-mode)
+                                   (derived-mode-p 'help-mode)
+                                   (derived-mode-p 'helpful-mode)
                                    (derived-mode-p 'elfeed-search)
                                    (derived-mode-p 'elfeed-show)))
                       buffer-read-only))
@@ -762,6 +768,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                               ((derived-mode-p 'vterm-mode) " >_")
                               ((derived-mode-p 'eshell-mode) " λ:")
                               ((derived-mode-p 'Info-mode) " ℹ")
+                              ((derived-mode-p 'help-mode) " ")
+                              ((derived-mode-p 'helpful-mode) " ")
                               ;; otherwise just use rw symbol
                               (t (if (display-graphic-p) lambda-line-gui-rw-symbol
                                    lambda-line-tty-rw-symbol))))))
@@ -779,6 +787,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                        (derived-mode-p 'eshell-mode))
                                    'lambda-line-active-status-MD)
                                   ((derived-mode-p 'Info-mode) 'lambda-line-active-status-RO)
+                                  ((derived-mode-p 'help-mode) 'lambda-line-active-status-RO)
+                                  ((derived-mode-p 'helpful-mode) 'lambda-line-active-status-RO)
                                   (t                       'lambda-line-active))
                           (cond ((eq status 'read-only)  'lambda-line-inactive-status-RO)
                                 ((eq status 'read-write) 'lambda-line-inactive-status-RW)
@@ -786,7 +796,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                 ((or (derived-mode-p 'term-mode)
                                      (derived-mode-p 'vterm-mode)
                                      (derived-mode-p 'eshell-mode)
-                                     (derived-mode-p 'Info-mode))
+                                     (derived-mode-p 'Info-mode)
+                                     (derived-mode-p 'help-mode)
+                                     (derived-mode-p 'helpful-mode))
                                  'lambda-line-inactive-status-RW)
                                 (t                       'lambda-line-inactive)))))
          (face-name (if active
@@ -905,6 +917,22 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-text-mode ()
   (lambda-line-default-mode))
 
+
+;;;;; Help (& Helpful) Mode
+(defun lambda-line-help-mode-p ()
+  (derived-mode-p 'help-mode))
+
+(defun lambda-line-helpful-mode-p ()
+  (derived-mode-p 'helpful-mode))
+
+(defun lambda-line-help-mode ()
+  (lambda-line-compose "HELP"
+                       (format-mode-line "%b")
+                       ""
+                       ""
+                       (format-mode-line "%l:%c:%o")))
+
+
 ;;;;; Info Display
 ;; ---------------------------------------------------------------------
 (defun lambda-line-info-breadcrumbs ()
@@ -914,38 +942,40 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
         (crumbs ())
         (depth Info-breadcrumbs-depth)
         line)
-    (while  (> depth 0)
-      (setq node (nth 1 (assoc node nodes)))
-      (if node (push node crumbs))
-      (setq depth (1- depth)))
-    (setq crumbs (cons "Top" (if (member (pop crumbs) '(nil "Top"))
-                                 crumbs (cons nil crumbs))))
-    (forward-line 1)
-    (dolist (node crumbs)
-      (let ((text
-             (if (not (equal node "Top")) node
-               (format "%s"
-                       (if (stringp Info-current-file)
-                           (file-name-sans-extension
-                            (file-name-nondirectory Info-current-file))
-                         Info-current-file)))))
-        (setq line (concat line (if (null line) "" " > ")
-                           (if (null node) "..." text)))))
-    (if (and cnode (not (equal cnode "Top")))
-        (setq line (concat line (if (null line) "" " > ") cnode)))
-    line))
+    (save-excursion
+      (while  (> depth 0)
+        (setq node (nth 1 (assoc node nodes)))
+        (if node (push node crumbs))
+        (setq depth (1- depth)))
+      (setq crumbs (cons "Top" (if (member (pop crumbs) '(nil "Top"))
+                                   crumbs (cons nil crumbs))))
+      (forward-line 1)
+      (dolist (node crumbs)
+        (let ((text
+               (if (not (equal node "Top")) node
+                 (format "%s"
+                         (if (stringp Info-current-file)
+                             (file-name-sans-extension
+                              (file-name-nondirectory Info-current-file))
+                           Info-current-file)))))
+          (setq line (concat line (if (null line) "" " > ")
+                             (if (null node) "..." text)))))
+      (if (and cnode (not (equal cnode "Top")))
+          (setq line (concat line (if (null line) "" " > ") cnode)))
+      line)))
 
 (defun lambda-line-info-mode-p ()
   (derived-mode-p 'Info-mode))
 
 (defun lambda-line-info-mode ()
-  (lambda-line-compose ""
-                       "INFO"
+  (lambda-line-compose "INFO"
+                       ""
                        (concat lambda-line-display-group-start
                                (lambda-line-info-breadcrumbs)
                                lambda-line-display-group-end)
-                       nil
-                       (lambda-line-time)))
+                       ""
+                       ""
+                       ))
 
 (defun lambda-line-info-activate ()
   (if (eq lambda-line-position 'top)
