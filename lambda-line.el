@@ -1205,14 +1205,14 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (derived-mode-p 'org-agenda-mode))
 
 (defun lambda-line-org-agenda-mode ()
-  (lambda-line-compose (lambda-line-status)
-                       "Agenda"
-                       ""
-                       ""
-                       (concat (propertize "◴"
-                                           'face 'lambda-line-active-secondary
-                                           'display '(raise 0.06))
-                               (format-time-string "%H:%M "))))
+  (let ((lambda-line-icon-time t))
+    (lambda-line-compose (lambda-line-status)
+                         "Agenda"
+                         (concat lambda-line-display-group-start (format "%S" org-agenda-current-span) lambda-line-display-group-end)
+                         ""
+                         (concat (format-time-string "%A, %d %B %Y")
+                                 (lambda-line-time)
+                                 (format-time-string " %H:%M")))))
 
 ;;;; Org Clock
 ;; ---------------------------------------------------------------------
