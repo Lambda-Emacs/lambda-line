@@ -265,6 +265,8 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-info-mode
                             :on-activate lambda-line-info-activate
                             :on-deactivate lambda-line-info-deactivate)
+    (magit-mode             :mode-p lambda-line-magit-mode-p
+                            :format lambda-line-magit-mode)
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
@@ -563,16 +565,60 @@ Otherwise show '-'."
   (defadvice vc-git-mode-line-string (after plus-minus (file) compile activate)
     "Show the information of git diff in status-line"
     (setq ad-return-value
-              (concat ad-return-value
-                          (let ((plus-minus (vc-git--run-command-string
-                                                     file "diff" "--numstat" "--")))
-                            (if (and plus-minus
-                                     (string-match "^\\([0-9]+\\)\t\\([0-9]+\\)\t" plus-minus))
-                                (concat
-                                 " "
-                                     (format "+%s" (match-string 1 plus-minus))
-                                     (format "-%s" (match-string 2 plus-minus)))
-                              ""))))))
+          (concat ad-return-value
+                  (let ((plus-minus (vc-git--run-command-string
+                                     file "diff" "--numstat" "--")))
+                    (if (and plus-minus
+                             (string-match "^\\([0-9]+\\)\t\\([0-9]+\\)\t" plus-minus))
+                        (concat
+                         " "
+                         (format "+%s" (match-string 1 plus-minus))
+                         (format "-%s" (match-string 2 plus-minus)))
+                      ""))))))
+
+;;;;; Git Parse Repo Status
+;; See https://kitchingroup.cheme.cmu.edu/blog/2014/09/19/A-git-status-Emacs-modeline/
+(defun lambda-line-git-parse-status ()
+  "Display the status of the repo."
+  (interactive)
+  (let ((U 0)   ; untracked files
+        (M 0)   ; modified files
+        (O 0)   ; other files
+        (U-files "")
+        (M-files "")
+        (O-files ""))
+    (dolist (line (split-string
+                   (shell-command-to-string "git status --porcelain")
+                   "\n"))
+      (cond
+
+       ;; ignore empty line at end
+       ((string= "" line) nil)
+
+       ((string-match "^\\?\\?" line)
+        (setq U (+ 1 U))
+        (setq U-files (concat U-files "\n" line)))
+
+       ((string-match "^ M" line)
+        (setq M (+ 1 M))
+        (setq M-files (concat M-files "\n" line))
+        )))
+
+    ;; construct propertized string
+    (concat
+     (propertize
+      (format "M:%d" M)
+      'face (list ':foreground (if (> M 0)
+                                   "red"
+                                 "forest green"))
+      'help-echo M-files)
+     "|"
+     (propertize
+      (format "?:%d" U)
+      'face (list ':foreground (if (> U 0)
+                                   "red"
+                                 "forest green"))
+      'help-echo U-files))))
 
 ;;;;; Flycheck/Flymake Segment
 (defvar-local lambda-line--flycheck-text nil)
@@ -1433,7 +1479,7 @@ depending on the version of mu4e."
   (lambda-line-compose (lambda-line-status)
                        (format-mode-line "%b")
                        ""
-                       nil
+                       ""
                        (format "[%s] "
                                (lambda-line-mu4e-quote
                                 (mu4e-context-name (mu4e-context-current))))))
@@ -1453,11 +1499,11 @@ depending on the version of mu4e."
                          "Search:"
                          (or (lambda-line-mu4e-quote
                               (lambda-line-mu4e-last-query)) "")
-                         nil
+                         ""
                          (concat
                           (format "[%s] "
-                                 (lambda-line-mu4e-quote
-                                  (mu4e-context-name (mu4e-context-current))))
+                                  (lambda-line-mu4e-quote
+                                   (mu4e-context-name (mu4e-context-current))))
                           (lambda-line-time)))))
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-view-mode-p ()
@@ -1584,11 +1630,37 @@ depending on the version of mu4e."
                  #'lambda-line-enlarge-ispell-choices-buffer))
 
 ;;;; Eldoc
+;; ---------------------------------------------------------------------
 ;; `eldoc-minibuffer-message' changes `mode-line-format' but status-line when
 ;; `lambda-line-position' is `top' fails to display info. Solution is to move
 ;; eldoc messages to the minibuffer/echo area.
 (when (eq lambda-line-position 'top)
   (setq eldoc-message-function #'message))
+
+;;;; Magit
+;; ---------------------------------------------------------------------
+(defun lambda-line-magit-mode-p ()
+  (derived-mode-p 'magit-mode))
+
+(defun lambda-line-magit-mode ()
+  (let* ((buffer-name (format-mode-line
+                       (if buffer-file-name
+                           (file-name-nondirectory (buffer-file-name))
+                         "%b")))
+         (mode-name   (lambda-line-mode-name))
+         (project     (file-name-nondirectory (directory-file-name (magit-toplevel))))
+         (branch      (magit-get-current-branch))
+         (status      (lambda-line-git-parse-status)))
+    (lambda-line-compose (lambda-line-status)
+                         mode-name
+                         (concat lambda-line-display-group-start
+                                 project
+                                 lambda-line-vc-symbol
+                                 branch
+                                 lambda-line-display-group-end)
+                         status
+                         "")))
+
 
 ;;;; Setup Lambda-line
 ;; ---------------------------------------------------------------------
