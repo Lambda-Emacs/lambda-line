@@ -222,6 +222,8 @@ Time info is only shown `display-time-mode' is non-nil"
                             :on-deactivate lambda-line-prog-deactivate)
     (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
                             :format lambda-line-mu4e-dashboard-mode)
+    (fundamental-mode       :mode-p lambda-line-fundamental-mode-p
+                            :format lambda-line-fundamental-mode)
     (text-mode              :mode-p lambda-line-text-mode-p
                             :format lambda-line-text-mode)
     (messages-mode          :mode-p lambda-line-messages-mode-p
@@ -608,16 +610,16 @@ Otherwise show '-'."
     (concat
      (propertize
       (format "M:%d" M)
-      'face (list ':foreground (if (> M 0)
-                                   "red"
-                                 "forest green"))
+      'face (if (> M 0)
+                'error
+              'success)
       'help-echo M-files)
-     "|"
+     (propertize "|" 'face 'magit-dimmed)
      (propertize
       (format "?:%d" U)
-      'face (list ':foreground (if (> U 0)
-                                   "red"
-                                 "forest green"))
+      'face (if (> U 0)
+                'error
+              'success)
       'help-echo U-files))))
 
 ;;;;; Flycheck/Flymake Segment
@@ -832,9 +834,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                        (derived-mode-p 'vterm-mode)
                                        (derived-mode-p 'eshell-mode))
                                    'lambda-line-active-status-MD)
-                                  ((derived-mode-p 'Info-mode) 'lambda-line-active-status-RO)
-                                  ((derived-mode-p 'help-mode) 'lambda-line-active-status-RO)
-                                  ((derived-mode-p 'helpful-mode) 'lambda-line-active-status-RO)
+                                  ((or (derived-mode-p 'Info-mode)
+                                       (derived-mode-p 'help-mode)
+                                       (derived-mode-p 'helpful-mode))
+                                   'lambda-line-active-status-RO)
                                   (t                       'lambda-line-active))
                           (cond ((eq status 'read-only)  'lambda-line-inactive-status-RO)
                                 ((eq status 'read-write) 'lambda-line-inactive-status-RW)
@@ -889,18 +892,20 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 ;;;; Default display
 (defun lambda-line-default-mode ()
   "Compose the default status line."
-  (let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
+  (let ((buffer-name (format-mode-line (if buffer-file-name
+                                           (file-name-nondirectory (buffer-file-name))
+                                         "%b")))
         (mode-name   (lambda-line-mode-name))
         (branch      (lambda-line-vc-project-branch))
         (position    (format-mode-line "%l:%c:%o")))
     (lambda-line-compose (lambda-line-status)
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
-                         (concat lambda-line-display-group-start mode-name
+                         (concat lambda-line-display-group-start
+                                 mode-name
                                  (when branch
                                    branch)
                                  lambda-line-display-group-end)
-
-                         nil
+                         ""
                          ;; Narrowed buffer
                          (concat (if (buffer-narrowed-p)
                                      (concat
@@ -954,6 +959,14 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (remove-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
   (when lambda-line-git-diff-mode-line
     (remove-hook 'after-save-hook #'vc-refresh-state)))
+
+;;;;; Fundamental Mode
+
+(defun lambda-line-fundamental-mode-p ()
+  (derived-mode-p 'fundamental-mode))
+
+(defun lambda-line-fundamental-mode ()
+  (lambda-line-default-mode))
 
 ;;;;; Text Mode
 
