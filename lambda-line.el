@@ -618,7 +618,7 @@ Otherwise show '-'."
      (propertize
       (format "?:%d" U)
       'face (if (> U 0)
-                'error
+                'warning
               'success)
       'help-echo U-files))))
 
@@ -1164,14 +1164,12 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                       (or (ignore-errors
                             (number-to-string (pdf-cache-number-of-pages)))
                           "???"))))
-    (lambda-line-compose
-     (lambda-line-status)
-     buffer-name
-     (concat lambda-line-display-group-start mode-name
-             branch
-             lambda-line-display-group-end)
-     ""
-     (concat page-number " " (lambda-line-time)))))
+    (lambda-line-compose (lambda-line-status)
+                         buffer-name
+                         (concat lambda-line-display-group-start mode-name
+                                 lambda-line-display-group-end)
+                         ""
+                         (concat page-number " " (lambda-line-time)))))
 
 ;;;; MenuMode
 
@@ -1654,6 +1652,11 @@ depending on the version of mu4e."
 ;; ---------------------------------------------------------------------
 (defun lambda-line-magit-mode-p ()
   (derived-mode-p 'magit-mode))
+
+;; Add functions to parse repo every N seconds
+(defvar lambda-line-git-parse-last-update (float-time) "Last time we updated")
+(defvar lambda-line-git-parse-update-interval 15 "Minimum time between update in seconds")
+(defvar lambda-line-git-parse "" "Last value of the parse")
 
 (defun lambda-line-magit-mode ()
   (let* ((buffer-name (format-mode-line
