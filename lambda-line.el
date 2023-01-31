@@ -222,10 +222,6 @@ Time info is only shown `display-time-mode' is non-nil"
                             :on-deactivate lambda-line-prog-deactivate)
     (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
                             :format lambda-line-mu4e-dashboard-mode)
-    (fundamental-mode       :mode-p lambda-line-fundamental-mode-p
-                            :format lambda-line-fundamental-mode)
-    (text-mode              :mode-p lambda-line-text-mode-p
-                            :format lambda-line-text-mode)
     (messages-mode          :mode-p lambda-line-messages-mode-p
                             :format lambda-line-messages-mode)
     (message-mode           :mode-p lambda-line-message-mode-p
@@ -288,6 +284,10 @@ Time info is only shown `display-time-mode' is non-nil"
                             :on-deactivate lambda-line-org-clock-deactivate)
     (pdf-view-mode          :mode-p lambda-line-pdf-view-mode-p
                             :format lambda-line-pdf-view-mode)
+    (fundamental-mode       :mode-p lambda-line-fundamental-mode-p
+                            :format lambda-line-fundamental-mode)
+    (text-mode              :mode-p lambda-line-text-mode-p
+                            :format lambda-line-text-mode)
 
     ;; hooks only go last
     (ein-notebook-mode      :on-activate lambda-line-ein-notebook-activate
