@@ -1437,8 +1437,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   "Encapsulates the call to the variable mu4e-/~server-props
 depending on the version of mu4e."
   (if (version< mu4e-mu-version "1.6.0")
-      mu4e~server-props
-    mu4e--server-props))
+      mu4e--server-props
+    mu4e~server-props))
 
 (defun lambda-line-mu4e-activate ()
   (with-eval-after-load 'mu4e
@@ -1498,8 +1498,8 @@ depending on the version of mu4e."
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-quote (str)
   (if (version< "1.6.5" mu4e-mu-version)
-      (mu4e~quote-for-modeline str)
-    (mu4e-quote-for-modeline str)))
+      (mu4e-quote-for-modeline str)
+    (mu4e~quote-for-modeline str)))
 
 (defun lambda-line-mu4e-headers-mode-p ()
   (derived-mode-p 'mu4e-headers-mode))
