@@ -1319,6 +1319,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                  (when branch
                                    branch)
                                  lambda-line-display-group-end)
+			 ""
                          (concat
                           ;; Narrowed buffer
                           (when (buffer-narrowed-p)
