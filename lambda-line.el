@@ -1427,10 +1427,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-mu4e-context ()
   "Return the current mu4e context as a non propertized string."
-  (if (> (length (mu4e-context-label)) 0)
+  (if (> (length (mu4e-context-name (mu4e-context-current))) 0)
       (concat
        lambda-line-display-group-start
-       (substring-no-properties (mu4e-context-label) 1 -1)
+       (substring-no-properties (mu4e-context-name (mu4e-context-current)) 1 -1)
        lambda-line-display-group-end)
     "(none)"))
 
