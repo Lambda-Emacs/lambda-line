@@ -1430,7 +1430,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (if (> (length (mu4e-context-name (mu4e-context-current))) 0)
       (concat
        lambda-line-display-group-start
-       (substring-no-properties (mu4e-context-name (mu4e-context-current)) 1 -1)
+       (substring-no-properties (mu4e-context-name (mu4e-context-current)))
        lambda-line-display-group-end)
     "(none)"))
 
