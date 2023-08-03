@@ -90,7 +90,7 @@ see the value of `lambda-line-abbrev-alist'"
   :group 'lambda-line
   :type 'boolean)
 
-(defcustom lambda-line-vc-symbol ""
+(defcustom lambda-line-vc-symbol ""
   "Symbol to use in buffers visiting files under version control"
   :group 'lambda-line
   :type 'string)
@@ -124,17 +124,17 @@ see the value of `lambda-line-abbrev-alist'"
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-ro-symbol " 𝛌 "
+(defcustom lambda-line-tty-ro-symbol " λ "
   "Modeline tty read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-mod-symbol " 𝛌 "
+(defcustom lambda-line-tty-mod-symbol " λ "
   "Modeline tty read-only symbol."
   :group 'lambda-line
   :type 'string)
 
-(defcustom lambda-line-tty-rw-symbol " 𝛌 "
+(defcustom lambda-line-tty-rw-symbol " λ "
   "Modeline tty read-write symbol."
   :group 'lambda-line
   :type 'string)
@@ -465,10 +465,10 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 
 (defcustom lambda-line-abbrev-alist
   `((dired-mode . "Dir")
-    (emacs-lisp-mode . "𝛌")
+    (emacs-lisp-mode . "λ")
     (fundamental-mode . "F")
-    (helpful-mode . "")
-    (help-mode . "")
+    (helpful-mode . "?")
+    (help-mode . "?")
     (lisp-interaction-mode . "λΙ")
     (markdown-mode . "MD")
     (magit-mode . "MG")
@@ -807,8 +807,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                               ((derived-mode-p 'vterm-mode) " >_")
                               ((derived-mode-p 'eshell-mode) " λ:")
                               ((derived-mode-p 'Info-mode) " ℹ")
-                              ((derived-mode-p 'help-mode) " ")
-                              ((derived-mode-p 'helpful-mode) " ")
+                              ((derived-mode-p 'help-mode) " ?")
+                              ((derived-mode-p 'helpful-mode) " ?")
                               ((eq status 'read-only)
                                (if (display-graphic-p) lambda-line-gui-ro-symbol
                                  lambda-line-tty-ro-symbol))
