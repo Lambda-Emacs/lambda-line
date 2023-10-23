@@ -1169,7 +1169,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                          buffer-name
                          (concat lambda-line-display-group-start mode-name
                                  lambda-line-display-group-end)
-                         ""
+                         nil
                          (concat page-number " " (lambda-line-time)))))
 
 ;;;; MenuMode
