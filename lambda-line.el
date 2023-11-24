@@ -3,7 +3,7 @@
 ;; Author: Colin McLear
 ;; Maintainer: Colin McLear
 ;; Version: 0.2.0
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "27.1") (all-the-icons "5.0.0"))
 ;; Homepage: https://github.com/Lambda-Emacs/lambda-line
 ;; Keywords: mode-line faces
 
