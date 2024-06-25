@@ -172,6 +172,11 @@ Negative is downwards."
   :type 'boolean
   :group 'lambda-line)
 
+(defcustom lambda-line-which-func nil
+  "Show `which-function-mode' display in status-line."
+  :type 'boolean
+  :group 'lambda-line)
+
 (defcustom lambda-line-flycheck-label "Issues: "
   "Show with flycheck/flymake issues count."
   :type 'string
@@ -651,6 +656,13 @@ Otherwise show '-'."
       (concat (format-mode-line flymake-mode-line-format) " ")
     lambda-line--flycheck-text))
 
+(defun lambda-line-show-func ()
+  "Display `which-function-mode' output in mode-line."
+  (if (and (boundp 'which-function-mode)
+       (default-value 'which-function-mode))
+      (concat (format-mode-line which-func-format) " ")
+    ""))
+
 ;;;;; Display-time-mode
 (defun lambda-line-install-clockface-fonts ()
   "Install ClockFace fonts on the local system.
@@ -929,8 +941,11 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                  (when branch branch)
                                  lambda-line-display-group-end)
 
-                         (if lambda-line-syntax
-                             (lambda-line-check-syntax) "")
+                         (concat
+                          (if lambda-line-which-func
+                              (lambda-line-show-func) "")
+                          (if lambda-line-syntax
+                              (lambda-line-check-syntax) ""))
 
                          (concat
                           ;; Narrowed buffer
