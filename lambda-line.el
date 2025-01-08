@@ -229,7 +229,8 @@ Time info is only shown `display-time-mode' is non-nil"
     (prog-mode              :mode-p lambda-line-prog-mode-p
                             :format lambda-line-prog-mode
                             :on-activate lambda-line-prog-activate
-                            :on-deactivate lambda-line-prog-deactivate)
+                            :on-deactivate lambda-line-prog-deactivate
+                            :abbrev "PR")
     (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
                             :format lambda-line-mu4e-dashboard-mode)
     (messages-mode          :mode-p lambda-line-messages-mode-p
@@ -237,13 +238,29 @@ Time info is only shown `display-time-mode' is non-nil"
     (message-mode           :mode-p lambda-line-message-mode-p
                             :format lambda-line-message-mode)
     (term-mode              :mode-p lambda-line-term-mode-p
-                            :format lambda-line-term-mode)
+                            :format lambda-line-term-mode
+                            :prefix-symbol " >_"
+                            :face-prefix-active 'lambda-line-active-status-MD
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
     (vterm-mode             :mode-p lambda-line-vterm-mode-p
-                            :format lambda-line-term-mode)
+                            :format lambda-line-term-mode
+                            :prefix-symbol " >_"
+                            :face-prefix-active 'lambda-line-active-status-MD
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
     (eshell-mode            :mode-p lambda-line-eshell-mode-p
-                            :format lambda-line-eshell-mode)
+                            :format lambda-line-eshell-mode
+                            :prefix-symbol " λ:"
+                            :face-prefix-active 'lambda-line-active-status-MD
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
     (shell-mode             :mode-p lambda-line-shell-mode-p
-                            :format lambda-line-shell-mode)
+                            :format lambda-line-shell-mode
+                            :prefix-symbol " >"
+                            :face-prefix-active 'lambda-line-active-status-MD
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
     (buffer-menu-mode       :mode-p lambda-line-buffer-menu-mode-p
                             :format lambda-line-buffer-menu-mode
                             :on-activate lambda-line-buffer-menu-activate
@@ -255,28 +272,50 @@ Time info is only shown `display-time-mode' is non-nil"
     (completion-list-mode   :mode-p lambda-line-completion-list-mode-p
                             :format lambda-line-completion-list-mode)
     (deft-mode              :mode-p lambda-line-deft-mode-p
-      :format lambda-line-deft-mode)
+                            :format lambda-line-deft-mode)
+    (Dired-mode             :abbrev "Dir")
     (doc-view-mode          :mode-p lambda-line-doc-view-mode-p
                             :format lambda-line-doc-view-mode)
     (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
                             :format lambda-line-elfeed-search-mode
                             :on-activate lambda-line-elfeed-search-activate
-                            :on-deactivate lambda-line-elfeed-search-deactivate)
+                            :on-deactivate lambda-line-elfeed-search-deactivate
+                            :always-modifiable t)
     (elfeed-show-mode       :mode-p lambda-line-elfeed-show-mode-p
-                            :format lambda-line-elfeed-show-mode)
+                            :format lambda-line-elfeed-show-mode
+                            :always-modifiable t)
     (elpher-mode            :mode-p lambda-line-elpher-mode-p
                             :format lambda-line-elpher-mode
                             :on-activate lambda-line-elpher-activate)
+    (emacs-lisp-mode        :abbrev "λ")
     (help-mode              :mode-p lambda-line-help-mode-p
-                            :format lambda-line-help-mode)
+                            :format lambda-line-help-mode
+                            :abbrev "?"
+                            :prefix-symbol " ?"
+                            :face-prefix-active 'lambda-line-active-status-RO
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
     (helpful-mode           :mode-p lambda-line-helpful-mode-p
-                            :format lambda-line-help-mode)
-    (info-mode              :mode-p lambda-line-info-mode-p
+                            :format lambda-line-help-mode
+                            :abbrev "?"
+                            :prefix-symbol " ?"
+                            :face-prefix-active 'lambda-line-active-status-RO
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
+    (Info-mode              :mode-p lambda-line-info-mode-p
                             :format lambda-line-info-mode
                             :on-activate lambda-line-info-activate
-                            :on-deactivate lambda-line-info-deactivate)
+                            :on-deactivate lambda-line-info-deactivate
+                            :prefix-symbol " ℹ"
+                            :face-prefix-active 'lambda-line-active-status-RO
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
+    (lisp-interaction-mode  :abbrev "λΙ"
+                            :always-modifiable t)
     (magit-mode             :mode-p lambda-line-magit-mode-p
-                            :format lambda-line-magit-mode)
+                            :format lambda-line-magit-mode
+                            :abbrev "MG")
+    (markdown-mode          :abbrev "MD")
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
@@ -287,19 +326,22 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-mu4e-main-mode)
     (mu4e-view-mode         :mode-p lambda-line-mu4e-view-mode-p
                             :format lambda-line-mu4e-view-mode)
+    (nxhtml-mode            :abbrev "NX")
     (org-agenda-mode        :mode-p lambda-line-org-agenda-mode-p
                             :format lambda-line-org-agenda-mode)
-
     (org-clock-mode         :mode-p lambda-line-org-clock-mode-p
                             :format lambda-line-org-clock-mode
                             :on-activate lambda-line-org-clock-activate
                             :on-deactivate lambda-line-org-clock-deactivate)
     (pdf-view-mode          :mode-p lambda-line-pdf-view-mode-p
                             :format lambda-line-pdf-view-mode)
+    (python-mode            :abbrev "PY")
     (fundamental-mode       :mode-p lambda-line-fundamental-mode-p
-                            :format lambda-line-fundamental-mode)
+                            :format lambda-line-fundamental-mode
+                            :abbrev "F")
     (text-mode              :mode-p lambda-line-text-mode-p
-                            :format lambda-line-text-mode)
+                            :format lambda-line-text-mode
+                            :abbrev "TX")
 
     ;; hooks only go last
     (ein-notebook-mode      :on-activate lambda-line-ein-notebook-activate
@@ -315,13 +357,21 @@ Time info is only shown `display-time-mode' is non-nil"
 KEY mode name, for reference only. Easier to do lookups and/or replacements.
 :MODE-P the function to check if :FORMAT needs to be used, first one wins.
 :ON-ACTIVATE and :ON-DEACTIVATE do hook magic on enabling/disabling the mode.
+:ABBREV substitutes an abbreviation if given the correct minor/major mode symbol
+and a string you want to use in the modeline *as substitute for* the original.
 "
-  :type '(alist :key-type symbol
+  :type '(alist :key-type (symbol :tag "Major mode")
                 :value-type (plist :key-type (choice (const :mode-p)
                                                      (const :format)
                                                      (const :on-activate)
-                                                     (const :on-deactivate))
-                                   :value-type function))
+                                                     (const :on-deactivate)
+                                                     (const :abbrev)
+                                                     (const :prefix-symbol)  ;; custom prefix
+                                                     (const :face-prefix-active)
+                                                     (const :face-prefix-inactive)
+                                                     (const :always-modifiable))  ;; never read-only?
+                                   :value-type (choice (function) (string))
+                                   :tag "Mode formats"))
   :group 'lambda-line)
 
 (defcustom lambda-line-mode-format-activate-hook nil
@@ -503,39 +553,18 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 ;;;;; Abbreviate Major-Mode
 ;; Source: https://www.masteringemacs.org/article/hiding-replacing-modeline-strings
 
-(defcustom lambda-line-abbrev-alist
-  `((dired-mode . "Dir")
-    (emacs-lisp-mode . "λ")
-    (fundamental-mode . "F")
-    (helpful-mode . "?")
-    (help-mode . "?")
-    (lisp-interaction-mode . "λΙ")
-    (markdown-mode . "MD")
-    (magit-mode . "MG")
-    (nxhtml-mode . "NX")
-    (prog-mode . "PR")
-    (python-mode . "PY")
-    (text-mode . "TX"))
-  "Alist for `lambda-line--abbrev'.
-
-When you add a new element to the alist, keep in mind that you
-must pass the correct minor/major mode symbol and a string you
-want to use in the modeline *as substitute for* the original."
-  :type '(alist
-          :key-type (symbol :tag "Major mode")
-          :value-type (string :tag "Abbreviation"))
-  :group 'lambda-line)
-
 (defun lambda-line--abbrev ()
-  (cl-loop for abbrev in lambda-line-abbrev-alist
-           do (let* ((mode (car abbrev))
-                     (mode-str (cdr abbrev))
-                     (old-mode-str (cdr (assq mode minor-mode-alist))))
-                (when old-mode-str
-                  (setcar old-mode-str mode-str))
-                ;; major mode
-                (when (eq mode major-mode)
-                  (setq mode-name mode-str)))))
+  (cl-loop for elt in lambda-line-mode-formats
+           do (let* ((mode (car elt))
+                     (config (cdr elt))
+                     (mode-str (plist-get config :abbrev))
+                     (old-mode-str (when mode-str (cdr (assq mode minor-mode-alist)))))
+                (when mode-str
+                  (when old-mode-str
+                    (setcar old-mode-str mode-str))
+                  ;; major mode
+                  (when (eq mode major-mode)
+                    (setq mode-name mode-str))))))
 
 ;; Set abbrev (default is nil)
 (when lambda-line-abbrev
@@ -558,6 +587,17 @@ want to use in the modeline *as substitute for* the original."
     (if (> (length str) size)
         (format "%s%s" (substring str 0 (- size (length ellipsis))) ellipsis)
       str)))
+
+;;;;; Get mode-formats config
+(defun lambda-line--mode-format-config (cfg &optional exact)
+  "Retrieve a config from the mode's mode-format; derived mode unless EXACT."
+  (cl-find-if
+    (lambda (elt)
+      (let ((mode (car elt))
+            (config (cdr elt)))
+        (and (if exact (eq mode major-mode) (derived-mode-p mode)) (plist-get config cfg))))
+    lambda-line-mode-formats))
+
 
 ;;;;; Branch display
 ;; -------------------------------------------------------------------
@@ -603,9 +643,9 @@ Otherwise show '-'."
 
 ;;;;; Git diff in modeline
 ;; https://cocktailmake.github.io/posts/emacs-modeline-enhancement-for-git-diff/
-(when lambda-line-git-diff-mode-line
-  (defadvice vc-git-mode-line-string (after plus-minus (file) compile activate)
-    "Show the information of git diff in status-line"
+(defadvice vc-git-mode-line-string (after plus-minus (file) compile activate)
+  "Show the information of git diff in status-line"
+  (when lambda-line-git-diff-mode-line
     (setq ad-return-value
           (concat ad-return-value
                   (let ((plus-minus (vc-git--run-command-string
@@ -832,18 +872,13 @@ Optionally use another clockface font."
 (defun lambda-line-status ()
   "Return buffer status, one of 'read-only, 'modified or 'read-write."
 
-  (let ((read-only  (when (not (or (derived-mode-p 'vterm-mode)
-                                   (derived-mode-p 'term-mode)
-                                   (derived-mode-p 'Info-mode)
-                                   (derived-mode-p 'help-mode)
-                                   (derived-mode-p 'helpful-mode)
-                                   (derived-mode-p 'elfeed-search)
-                                   (derived-mode-p 'elfeed-show)))
+  (let ((read-only  (when (not (lambda-line--mode-format-config :always-modifiable))
                       buffer-read-only))
         (modified    (and buffer-file-name (buffer-modified-p))))
     (cond (modified  'modified)
           (read-only 'read-only)
           (t         'read-write))))
+
 
 ;;;;; Compose Status-Line
 (defun lambda-line-compose (status name primary tertiary secondary &optional prefix)
@@ -866,16 +901,13 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
          (active (eq window lambda-line--selected-window))
 
+         ;; Is the current mode designated to have an explicit prefix symbol?
+         (explicit-prefix (unless prefix (lambda-line--mode-format-config :prefix-symbol)))
+
          (prefix (cond (prefix prefix)
                        ((eq lambda-line-prefix nil) "")
                        (t
-                        (cond ((derived-mode-p 'term-mode) " >_")
-                              ((derived-mode-p 'vterm-mode) " >_")
-                              ((derived-mode-p 'eshell-mode) " λ:")
-                              ((derived-mode-p 'shell-mode) " >")
-                              ((derived-mode-p 'Info-mode) " ℹ")
-                              ((derived-mode-p 'help-mode) " ?")
-                              ((derived-mode-p 'helpful-mode) " ?")
+                        (cond (explicit-prefix explicit-prefix)
                               ((eq status 'read-only)
                                (if (display-graphic-p) lambda-line-gui-ro-symbol
                                  lambda-line-tty-ro-symbol))
@@ -1028,8 +1060,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   "Setup flycheck hooks."
   (add-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
   (add-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
-  (when lambda-line-git-diff-mode-line
-    (add-hook 'after-save-hook #'vc-refresh-state)))
+  (if lambda-line-git-diff-mode-line
+    (add-hook 'after-save-hook #'vc-refresh-state)
+    (remove-hook 'after-save-hook #'vc-refresh-state)))
 
 (defun lambda-line-prog-deactivate ()
   "Remove flycheck hooks."
