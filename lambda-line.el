@@ -70,7 +70,12 @@ displayed. It can be an integer or a float number. `nil' means no limit."
 
 (defcustom lambda-line-prefix-padding t
   "Include prefix padding."
-  :type 'boolean
+  :type '(choice boolean string)
+  :group 'lambda-line)
+
+(defcustom lambda-line-prefix-padding-left nil
+  "Include prefix padding to the left."
+  :type '(choice boolean string)
   :group 'lambda-line)
 
 (defcustom lambda-line-user-mode nil
@@ -396,7 +401,7 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 
 (defcustom lambda-line-default-tertiary-function nil
   "Default tertiary format format function to evaluate."
-  :type 'function
+  :type '(choice (const nil) function)
   :group 'lambda-line)
 
 (defcustom lambda-line-default-vc-mode-function 'lambda-line-vc-project-branch
@@ -589,6 +594,12 @@ This is if no match could be found in `lambda-lines-mode-formats'"
     (if (> (length str) size)
         (format "%s%s" (substring str 0 (- size (length ellipsis))) ellipsis)
       str)))
+
+(defun lambda-line--padding (pref)
+  "Return padding for the prefix."
+  (cond ((stringp pref) pref)
+        (pref " ")
+        (t "")))
 
 ;;;;; Get mode-formats config
 (defun lambda-line--mode-format-config (cfg &optional exact)
@@ -982,12 +993,12 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
          (left
           ;; special face for special mode prefixes
           (concat
+           (propertize (lambda-line--padding lambda-line-prefix-padding-left) 'face face-modeline)
            (propertize prefix 'face face-prefix 'display `(raise ,lambda-line-symbol-position))
            ;; this matters for inverse-video!
            (propertize " " 'face face-prefix  'display `(raise ,lambda-line-space-top))
 
-           (when lambda-line-prefix-padding
-             (propertize " " 'face face-modeline))
+           (propertize (lambda-line--padding lambda-line-prefix-padding) 'face face-modeline)
 
            (propertize name 'face face-name)
 
