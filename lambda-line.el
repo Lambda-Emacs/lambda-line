@@ -401,12 +401,14 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 
 (defcustom lambda-line-default-vc-mode-function 'lambda-line-vc-project-branch
   "Default version control format function to evaluate."
-  :type 'function
+  :type '(choice (const :tag "None" nil)
+                 (function :tag "Function"))
   :group 'lambda-line)
 
 (defcustom lambda-line-prog-mode-info-function nil
   "Default prog-mode info format function to evaluate."
-  :type 'function
+  :type '(choice (const :tag "None" nil)
+                 (function :tag "Function"))
   :group 'lambda-line)
 
 ;;;; Faces
@@ -597,6 +599,18 @@ This is if no match could be found in `lambda-lines-mode-formats'"
             (config (cdr elt)))
         (and (if exact (eq mode major-mode) (derived-mode-p mode)) (plist-get config cfg))))
     lambda-line-mode-formats))
+
+(defun lambda-line--vc-info ()
+  "Return the version control information."
+  (if lambda-line-default-vc-mode-function
+    (funcall lambda-line-default-vc-mode-function)
+    ""))
+
+(defun lambda-line--prog-mode-info ()
+  "Return the prog-mode information."
+  (if lambda-line-prog-mode-info-function
+    (funcall lambda-line-prog-mode-info-function)
+    ""))
 
 
 ;;;;; Branch display
@@ -1001,7 +1015,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                            (file-name-nondirectory (buffer-file-name))
                                          "%b")))
         (mode-name   (lambda-line-mode-name))
-        (vc-info     (if lambda-line-default-vc-mode-function (funcall lambda-line-default-vc-mode-function) ""))
+        (vc-info     (lambda-line--vc-info))
         (position    (format-mode-line lambda-line-position-format)))
     (lambda-line-compose (lambda-line-status)
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
@@ -1027,8 +1041,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-prog-mode ()
   (let ((buffer-name (format-mode-line (if buffer-file-name (file-name-nondirectory (buffer-file-name)) "%b")))
         (mode-name   (lambda-line-mode-name))
-        (vc-info     (if lambda-line-default-vc-mode-function (funcall lambda-line-default-vc-mode-function) ""))
-        (prog-info   (if lambda-line-prog-mode-info-function (funcall lambda-line-prog-mode-info-function) ""))
+        (vc-info     (lambda-line--vc-info))
+        (prog-info   (lambda-line--prog-mode-info))
         (position    (format-mode-line lambda-line-position-format)))
     (lambda-line-compose (lambda-line-status)
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
@@ -1259,7 +1273,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-doc-view-mode ()
   (let ((buffer-name (format-mode-line "%b"))
         (mode-name   (lambda-line-mode-name))
-        (vc-info     (if lambda-line-default-vc-mode-function (funcall lambda-line-default-vc-mode-function) ""))
+        (vc-info     (lambda-line--vc-info))
         (page-number (concat
                           (number-to-string (doc-view-current-page)) "/"
                           (or (ignore-errors
@@ -1320,7 +1334,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (let (
         ;; We take into account the case of narrowed buffers
         (buffer-name (buffer-name imenu-list--displayed-buffer))
-        (vc-info     (if lambda-line-default-vc-mode-function (funcall lambda-line-default-vc-mode-function) ""))
+        (vc-info     (lambda-line--vc-info))
         (position    (format-mode-line "%l:%c")))
     (lambda-line-compose (lambda-line-status)
                          buffer-name
@@ -1438,7 +1452,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-org-clock-mode ()
   (let ((buffer-name (format-mode-line "%b"))
         (mode-name   (lambda-line-mode-name))
-        (vc-info     (if lambda-line-default-vc-mode-function (funcall lambda-line-default-vc-mode-function) ""))
+        (vc-info     (lambda-line--vc-info))
         (position    (format-mode-line lambda-line-position-format)))
     (lambda-line-compose (lambda-line-status)
                          buffer-name
