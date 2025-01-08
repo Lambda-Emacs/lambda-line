@@ -370,7 +370,7 @@ and a string you want to use in the modeline *as substitute for* the original.
                                                      (const :face-prefix-active)
                                                      (const :face-prefix-inactive)
                                                      (const :always-modifiable))  ;; never read-only?
-                                   :value-type (choice (function) (string))
+                                   :value-type (choice (function) (string) (boolean))
                                    :tag "Mode formats"))
   :group 'lambda-line)
 
@@ -593,12 +593,15 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 ;;;;; Get mode-formats config
 (defun lambda-line--mode-format-config (cfg &optional exact)
   "Retrieve a config from the mode's mode-format; derived mode unless EXACT."
-  (cl-find-if
-    (lambda (elt)
-      (let ((mode (car elt))
-            (config (cdr elt)))
-        (and (if exact (eq mode major-mode) (derived-mode-p mode)) (plist-get config cfg))))
-    lambda-line-mode-formats))
+  (let ((found
+          (cl-find-if
+            (lambda (elt)
+              (let ((mode (car elt))
+                     (config (cdr elt)))
+                (and (if exact (eq mode major-mode) (derived-mode-p mode)) (plist-member config cfg))))
+            lambda-line-mode-formats)))
+    (when found
+      (plist-get (cdr found) cfg))))
 
 (defun lambda-line--vc-info ()
   "Return the version control information."
@@ -916,13 +919,13 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
          (active (eq window lambda-line--selected-window))
 
          ;; Is the current mode designated to have an explicit prefix symbol?
-         (explicit-prefix (unless prefix (lambda-line--mode-format-config :prefix-symbol)))
+         (explicit-prefix (lambda-line--mode-format-config :prefix-symbol))
 
-         (prefix (cond (prefix prefix)
+         (prefix (cond ((stringp prefix) prefix)
                        ((eq lambda-line-prefix nil) "")
+                       ((stringp explicit-prefix) explicit-prefix)
                        (t
-                        (cond (explicit-prefix explicit-prefix)
-                              ((eq status 'read-only)
+                        (cond ((eq status 'read-only)
                                (if (display-graphic-p) lambda-line-gui-ro-symbol
                                  lambda-line-tty-ro-symbol))
                               ((eq status 'read-write) (if (display-graphic-p) lambda-line-gui-rw-symbol
