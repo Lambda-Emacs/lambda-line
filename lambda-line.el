@@ -955,32 +955,21 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
          (face-modeline (if active
                             'lambda-line-active
                           'lambda-line-inactive))
+
+         (explicit-face-prefix-active (lambda-line--mode-format-config :face-prefix-active))
+         (explicit-face-prefix-inactive (lambda-line--mode-format-config :face-prefix-inactive))
+
          (face-prefix (if (not prefix) face-modeline
                         (if active
                             (cond ((eq status 'read-only)  'lambda-line-active-status-RO)
                                   ((eq status 'read-write) 'lambda-line-active-status-RW)
                                   ((eq status 'modified)   'lambda-line-active-status-MD)
-                                  ((or (derived-mode-p 'term-mode)
-                                       (derived-mode-p 'vterm-mode)
-                                       (derived-mode-p 'eshell-mode)
-                                       (derived-mode-p 'shell-mode))
-                                   'lambda-line-active-status-MD)
-                                  ((or (derived-mode-p 'Info-mode)
-                                       (derived-mode-p 'help-mode)
-                                       (derived-mode-p 'helpful-mode))
-                                   'lambda-line-active-status-RO)
+                                  (explicit-face-prefix-active explicit-face-prefix-active)
                                   (t                       'lambda-line-active))
                           (cond ((eq status 'read-only)  'lambda-line-inactive-status-RO)
                                 ((eq status 'read-write) 'lambda-line-inactive-status-RW)
                                 ((eq status 'modified)   'lambda-line-inactive-status-MD)
-                                ((or (derived-mode-p 'term-mode)
-                                     (derived-mode-p 'vterm-mode)
-                                     (derived-mode-p 'eshell-mode)
-                                     (derived-mode-p 'shell-mode)
-                                     (derived-mode-p 'Info-mode)
-                                     (derived-mode-p 'help-mode)
-                                     (derived-mode-p 'helpful-mode))
-                                 'lambda-line-inactive-status-RW)
+                                (explicit-face-prefix-inactive explicit-face-prefix-inactive)
                                 (t                       'lambda-line-inactive)))))
          (face-name (if active
                         'lambda-line-active-name
