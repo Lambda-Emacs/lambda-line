@@ -323,7 +323,8 @@ Time info is only shown `display-time-mode' is non-nil"
                             :always-modifiable t)
     (magit-mode             :mode-p lambda-line-magit-mode-p
                             :format lambda-line-magit-mode
-                            :abbrev "MG")
+                            :abbrev "MG"
+                            :prefix-symbol " ✨")
     (markdown-mode          :abbrev "MD")
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
