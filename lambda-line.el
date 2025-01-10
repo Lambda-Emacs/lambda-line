@@ -725,7 +725,7 @@ Otherwise show '-'."
          )
 
        (t
-        (message "detected other in %s" line)
+        ;;(message "detected other in %s" line)
         (setq O (+ 1 O))
         (setq O-files (concat O-files "\n" line)))))
       
