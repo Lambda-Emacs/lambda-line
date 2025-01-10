@@ -293,6 +293,10 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-elpher-mode
                             :on-activate lambda-line-elpher-activate)
     (emacs-lisp-mode        :abbrev "λ")
+    (gud-mode               :prefix-symbol " 🐞"
+                            :face-prefix-active 'lambda-line-active-status-MD
+                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :always-modifiable t)
     (help-mode              :mode-p lambda-line-help-mode-p
                             :format lambda-line-help-mode
                             :abbrev "?"
