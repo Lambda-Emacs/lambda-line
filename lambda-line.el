@@ -296,8 +296,12 @@ Time info is only shown `display-time-mode' is non-nil"
     (completion-list-mode   :mode-p lambda-line-completion-list-mode-p
                             :format lambda-line-completion-list-mode)
     (deft-mode              :mode-p lambda-line-deft-mode-p
-                            :format lambda-line-deft-mode)
-    (Dired-mode             :abbrev "Dir")
+                            :format lambda-line-deft-mode
+                            :prefix-symbol " DEFT ")
+    (dired-mode             :mode-p lambda-line-dired-mode-p
+                            :format lambda-line-dired-mode
+                            :abbrev "Dir"
+                            :prefix-symbol " 📂")
     (doc-view-mode          :mode-p lambda-line-doc-view-mode-p
                             :format lambda-line-doc-view-mode)
     (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
@@ -311,7 +315,8 @@ Time info is only shown `display-time-mode' is non-nil"
     (elpher-mode            :mode-p lambda-line-elpher-mode-p
                             :format lambda-line-elpher-mode
                             :on-activate lambda-line-elpher-activate)
-    (emacs-lisp-mode        :abbrev "λ")
+    (emacs-lisp-mode        :abbrev "λ"
+                            :prefix-symbol " λ")
     (gud-mode               :prefix-symbol " 🐞"
                             :face-prefix-active 'lambda-line-active-status-MD
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
@@ -339,6 +344,7 @@ Time info is only shown `display-time-mode' is non-nil"
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
                             :always-modifiable t)
     (lisp-interaction-mode  :abbrev "λΙ"
+                            :prefix-symbol " λΙ"
                             :always-modifiable t)
     (magit-mode             :mode-p lambda-line-magit-mode-p
                             :format lambda-line-magit-mode
@@ -348,7 +354,8 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-org-mode)
     (markdown-mode          :mode-p lambda-line-markdown-mode-p
                             :format lambda-line-markdown-mode
-                            :abbrev "MD")
+                            :abbrev "MD"
+                            :prefix-symbol " M↓")
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
@@ -778,7 +785,7 @@ This is if no match could be found in `lambda-lines-mode-formats'"
       (when lambda-line--cache-word-count
         (concat
          " "  ; Leading space for separation
-         (propertize lambda-line-word-count-symbol 
+         (propertize lambda-line-word-count-symbol
                      'face 'lambda-line-active-tertiary)
          (propertize (format "%d" lambda-line--cache-word-count)
                      'face 'lambda-line-active-tertiary)
@@ -795,8 +802,8 @@ This is if no match could be found in `lambda-lines-mode-formats'"
     (progn
       (lambda-line--update-cache-timestamp)
       (setq lambda-line--cache-project-name
-            (file-name-nondirectory 
-             (directory-file-name 
+            (file-name-nondirectory
+             (directory-file-name
               (if (vc-root-dir) (vc-root-dir) "-")))))))
 
 (defun lambda-line-vc-project-branch ()
@@ -807,7 +814,7 @@ Otherwise show '-'."
                      lambda-line--cache-vc-backend
                    (progn
                      (lambda-line--update-cache-timestamp)
-                     (setq lambda-line--cache-vc-backend 
+                     (setq lambda-line--cache-vc-backend
                            (vc-backend buffer-file-name))))))
     (concat
      (if buffer-file-name
@@ -913,7 +920,7 @@ Otherwise show '-'."
         ;;(message "detected other in %s" line)
         (setq O (+ 1 O))
         (setq O-files (concat O-files "\n" line)))))
-      
+
     ;; construct propertized string
     (concat
      (propertize
@@ -1081,7 +1088,7 @@ Optionally use another clockface font."
         (unless lambda-line-icon-time
           (if display-time-day-and-date
               (propertize (format-time-string lambda-line-time-day-and-date-format))
-            (propertize (format-time-string lambda-line-time-format ) 'face `(:height 0.9))))
+            (propertize (format-time-string lambda-line-time-format) 'face `(:height 0.9))))
         (propertize
           (format lambda-line-time-icon-format (char-to-string time-unicode)
            'display '(raise 0)))))))
@@ -1192,8 +1199,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
            (propertize primary 'face face-primary)))
 
-          (tertiary (if (not (string-empty-p tertiary)) 
-                       tertiary 
+          (tertiary (if (not (string-empty-p tertiary))
+                       tertiary
                      (if lambda-line-default-tertiary-function
                          (condition-case nil
                            (let ((result (funcall lambda-line-default-tertiary-function)))
@@ -1221,8 +1228,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                          "%b")))
         (mode-name   (lambda-line-mode-name))
         (vc-info     (lambda-line--vc-info))
-        (position    (format-mode-line lambda-line-position-format)))
-    (lambda-line-compose (lambda-line-status)
+        (position    (format-mode-line lambda-line-position-format))
+        (explicit-prefix (lambda-line--mode-format-config :prefix-symbol)))
+    (lambda-line-compose (or explicit-prefix (lambda-line-status))
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
                          (concat lambda-line-display-group-start
                                  mode-name
@@ -1614,6 +1622,14 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                    (format "%d notes" (length deft-all-files)))))
     (lambda-line-compose prefix primary filter nil matches)))
 
+;;;; Dired Mode
+
+(defun lambda-line-dired-mode-p ()
+  (derived-mode-p 'dired-mode))
+
+(defun lambda-line-dired-mode ()
+  (lambda-line-default-mode))
+
 ;;;; Calendar Mode
 ;; ---------------------------------------------------------------------
 (defun lambda-line-calendar-mode-p ()
@@ -1874,8 +1890,8 @@ depending on the version of mu4e."
 
 (defun lambda-line-mu4e-compose-mode ()
   (lambda-line-compose (lambda-line-status)
-                       (or (ignore-errors (format-mode-line "%b")) 
-                           (buffer-name) 
+                       (or (ignore-errors (format-mode-line "%b"))
+                           (buffer-name)
                            "Compose")
                        ""
                        ""
@@ -2235,7 +2251,7 @@ below or a buffer local variable 'no-mode-line'."
   (setq lambda-line-word-count-enabled (not lambda-line-word-count-enabled))
   (lambda-line--invalidate-cache)
   (force-mode-line-update t)
-  (message "Lambda-line word count %s" 
+  (message "Lambda-line word count %s"
            (if lambda-line-word-count-enabled "enabled" "disabled")))
 
 ;;; Provide:
