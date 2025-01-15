@@ -262,7 +262,7 @@ Time info is only shown `display-time-mode' is non-nil"
                             :always-modifiable t)
     (shell-mode             :mode-p lambda-line-shell-mode-p
                             :format lambda-line-shell-mode
-                            :prefix-symbol " >"
+                            :prefix-symbol "  "
                             :face-prefix-active 'lambda-line-active-status-MD
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
                             :always-modifiable t)
@@ -278,7 +278,10 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-completion-list-mode)
     (deft-mode              :mode-p lambda-line-deft-mode-p
                             :format lambda-line-deft-mode)
-    (Dired-mode             :abbrev "Dir")
+    (dired-mode             :mode-p lambda-line-dired-mode-p
+                            :mode-p lambda-line-dired-mode
+                            :abbrev "Dir"
+                            :prefix-symbol "    ")
     (doc-view-mode          :mode-p lambda-line-doc-view-mode-p
                             :format lambda-line-doc-view-mode)
     (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
@@ -292,8 +295,9 @@ Time info is only shown `display-time-mode' is non-nil"
     (elpher-mode            :mode-p lambda-line-elpher-mode-p
                             :format lambda-line-elpher-mode
                             :on-activate lambda-line-elpher-activate)
-    (emacs-lisp-mode        :abbrev "λ")
-    (gud-mode               :prefix-symbol " 🐞"
+    (emacs-lisp-mode        :abbrev "λ"
+                            :prefix-symbol "  ")
+    (gud-mode               :prefix-symbol "  "
                             :face-prefix-active 'lambda-line-active-status-MD
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
                             :always-modifiable t)
@@ -320,12 +324,14 @@ Time info is only shown `display-time-mode' is non-nil"
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
                             :always-modifiable t)
     (lisp-interaction-mode  :abbrev "λΙ"
+                            :prefix-symbol " λ "
                             :always-modifiable t)
     (magit-mode             :mode-p lambda-line-magit-mode-p
                             :format lambda-line-magit-mode
                             :abbrev "MG"
-                            :prefix-symbol " ✨")
-    (markdown-mode          :abbrev "MD")
+                            :prefix-symbol "   ")
+    (markdown-mode          :abbrev "MD"
+                            :prefix-symbol "  ")
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
@@ -1024,8 +1030,9 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                          "%b")))
         (mode-name   (lambda-line-mode-name))
         (vc-info     (lambda-line--vc-info))
-        (position    (format-mode-line lambda-line-position-format)))
-    (lambda-line-compose (lambda-line-status)
+        (position    (format-mode-line lambda-line-position-format))
+        (explicit-prefix (lambda-line--mode-format-config :prefix-symbol)))
+    (lambda-line-compose (or explicit-prefix (lambda-line-status))
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
                          (concat lambda-line-display-group-start
                                  mode-name
@@ -1381,6 +1388,14 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                      (format "%d matches" (length deft-current-files))
                    (format "%d notes" (length deft-all-files)))))
     (lambda-line-compose prefix primary filter nil matches)))
+
+;;;; Dired Mode
+
+(defun lambda-line-dired-mode-p ()
+  (derived-mode-p 'dired-mode))
+
+(defun lambda-line-dired-mode ()
+  (lambda-line-default-mode))
 
 ;;;; Calendar Mode
 ;; ---------------------------------------------------------------------
