@@ -114,7 +114,7 @@ see the value of `lambda-line-abbrev-alist'"
   :group 'lambda-line
   :type 'boolean)
 
-(defcustom lambda-line-vc-symbol ""
+(defcustom lambda-line-vc-symbol " "
   "Symbol to use in buffers visiting files under version control"
   :group 'lambda-line
   :type 'string)
