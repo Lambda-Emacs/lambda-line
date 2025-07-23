@@ -421,6 +421,11 @@ This is if no match could be found in `lambda-lines-mode-formats'"
                  (function :tag "Function"))
   :group 'lambda-line)
 
+(defcustom lambda-line-lsp-indicator t
+  "Show LSP/Eglot server status in modeline."
+  :type 'boolean
+  :group 'lambda-line)
+
 ;;;; Faces
 ;;;;; Line Faces
 
@@ -501,34 +506,40 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 ;; lambda-line uses a colored symbol to indicate the status of the buffer
 
 (defface lambda-line-active-status-RO
-  '((t (:inherit (lambda-line) :foreground "yellow" (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit lambda-line :foreground "yellow")))
   "Modeline face for active READ-ONLY element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-RO
-  '((t (:inherit (lambda-line-inactive) :foreground "light gray" (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit lambda-line-inactive :foreground "light gray")))
   "Modeline face for inactive READ-ONLY element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-RW
-  '((t (:inherit (lambda-line) :foreground "green" (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit lambda-line :foreground "green")))
   "Modeline face for active READ-WRITE element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-RW
-  '((t (:inherit (lambda-line-inactive) :foreground "light gray"  (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit lambda-line-inactive :foreground "light gray")))
   "Modeline face for inactive READ-WRITE element."
   :group 'lambda-line-inactive)
 
 (defface lambda-line-active-status-MD
-  '((t (:inherit (lambda-line) :foreground "red" (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit lambda-line :foreground "red")))
   "Modeline face for active MODIFIED element."
   :group 'lambda-line-active)
 
 (defface lambda-line-inactive-status-MD
-  '((t (:inherit (lambda-line-inactive) :foreground "light gray"  (when lambda-line-status-invert :inverse-video t))))
+  '((t (:inherit lambda-line-inactive :foreground "light gray")))
   "Modeline face for inactive MODIFIED element."
   :group 'lambda-line-inactive)
+
+(defun lambda-line--apply-status-face (face)
+  "Apply FACE with optional inverse video based on lambda-line-status-invert."
+  (if lambda-line-status-invert
+      `(,face :inverse-video t)
+    face))
 
 
 ;;;;; Bell Faces
@@ -619,6 +630,47 @@ This is if no match could be found in `lambda-lines-mode-formats'"
     (when found
       (plist-get (cdr found) cfg))))
 
+;;;;; Performance Caching
+;; -------------------------------------------------------------------
+(defvar-local lambda-line--cache-project-name nil
+  "Cached project name for current buffer.")
+(defvar-local lambda-line--cache-vc-backend nil
+  "Cached VC backend for current buffer.")
+(defvar-local lambda-line--cache-git-diff nil
+  "Cached git diff information for current buffer.")
+(defvar-local lambda-line--cache-timestamp nil
+  "Timestamp of last cache update.")
+
+(defcustom lambda-line-cache-duration 2.0
+  "Duration in seconds to cache expensive operations."
+  :type 'float
+  :group 'lambda-line)
+
+(defun lambda-line--cache-expired-p ()
+  "Return t if cache has expired."
+  (or (null lambda-line--cache-timestamp)
+      (> (float-time (time-since lambda-line--cache-timestamp))
+         lambda-line-cache-duration)))
+
+(defun lambda-line--invalidate-cache ()
+  "Invalidate all cached values."
+  (setq lambda-line--cache-project-name nil
+        lambda-line--cache-vc-backend nil
+        lambda-line--cache-git-diff nil
+        lambda-line--cache-timestamp nil))
+
+(defun lambda-line--update-cache-timestamp ()
+  "Update cache timestamp."
+  (setq lambda-line--cache-timestamp (current-time)))
+
+;; Cache invalidation hooks
+(add-hook 'after-save-hook #'lambda-line--invalidate-cache)
+(add-hook 'after-revert-hook #'lambda-line--invalidate-cache)
+(add-hook 'vc-checkin-hook #'lambda-line--invalidate-cache)
+(add-hook 'find-file-hook #'lambda-line--invalidate-cache)
+
+;;;;; Version Control
+;; -------------------------------------------------------------------
 (defun lambda-line--vc-info ()
   "Return the version control information."
   (if lambda-line-default-vc-mode-function
@@ -631,17 +683,47 @@ This is if no match could be found in `lambda-lines-mode-formats'"
     (funcall lambda-line-prog-mode-info-function)
     ""))
 
+(defun lambda-line--lsp-status ()
+  "Return LSP server status indicator."
+  (when lambda-line-lsp-indicator
+    (cond
+     ;; LSP mode
+     ((and (featurep 'lsp-mode) (bound-and-true-p lsp-mode))
+      (when (lsp-workspaces)
+        (propertize " LSP" 'face '(:inherit success))))
+     ;; Eglot
+     ((and (featurep 'eglot) (eglot-managed-p))
+      (propertize " Eglot" 'face '(:inherit success)))
+     ;; LSP not active but available
+     ((or (featurep 'lsp-mode) (featurep 'eglot))
+      (propertize " LSP?" 'face '(:inherit warning)))
+     (t ""))))
+
 
 ;;;;; Branch display
 ;; -------------------------------------------------------------------
 (defun lambda-line-project-name ()
   "Return name of project without path."
-  (file-name-nondirectory (directory-file-name (if (vc-root-dir) (vc-root-dir) "-"))))
+  (if (and lambda-line--cache-project-name
+           (not (lambda-line--cache-expired-p)))
+      lambda-line--cache-project-name
+    (progn
+      (lambda-line--update-cache-timestamp)
+      (setq lambda-line--cache-project-name
+            (file-name-nondirectory 
+             (directory-file-name 
+              (if (vc-root-dir) (vc-root-dir) "-")))))))
 
 (defun lambda-line-vc-project-branch ()
   "Show project and branch name for file.
 Otherwise show '-'."
-  (let ((backend (vc-backend buffer-file-name)))
+  (let ((backend (if (and lambda-line--cache-vc-backend
+                          (not (lambda-line--cache-expired-p)))
+                     lambda-line--cache-vc-backend
+                   (progn
+                     (lambda-line--update-cache-timestamp)
+                     (setq lambda-line--cache-vc-backend 
+                           (vc-backend buffer-file-name))))))
     (concat
      (if buffer-file-name
          (if vc-mode
@@ -676,20 +758,30 @@ Otherwise show '-'."
 
 ;;;;; Git diff in modeline
 ;; https://cocktailmake.github.io/posts/emacs-modeline-enhancement-for-git-diff/
-(defadvice vc-git-mode-line-string (after plus-minus (file) compile activate)
-  "Show the information of git diff in status-line"
+(defun lambda-line--get-git-diff (file)
+  "Get cached git diff information for FILE."
   (when lambda-line-git-diff-mode-line
-    (setq ad-return-value
-          (concat ad-return-value
-                  (let ((plus-minus (vc-git--run-command-string
-                                     file "diff" "--numstat" "--")))
-                    (if (and plus-minus
-                             (string-match "^\\([0-9]+\\)\t\\([0-9]+\\)\t" plus-minus))
-                        (concat
-                         " "
-                         (format "+%s" (match-string 1 plus-minus))
-                         (format "-%s" (match-string 2 plus-minus)))
-                      ""))))))
+    (if (and lambda-line--cache-git-diff
+             (not (lambda-line--cache-expired-p)))
+        lambda-line--cache-git-diff
+      (progn
+        (lambda-line--update-cache-timestamp)
+        (setq lambda-line--cache-git-diff
+              (let ((plus-minus (vc-git--run-command-string
+                                 file "diff" "--numstat" "--")))
+                (if (and plus-minus
+                         (string-match "^\\([0-9]+\\)\t\\([0-9]+\\)\t" plus-minus))
+                    (concat
+                     " "
+                     (format "+%s" (match-string 1 plus-minus))
+                     (format "-%s" (match-string 2 plus-minus)))
+                  "")))))))
+
+(define-advice vc-git-mode-line-string (:filter-return (result file) lambda-line-git-diff)
+  "Add git diff information to mode-line."
+  (if lambda-line-git-diff-mode-line
+      (concat result (lambda-line--get-git-diff file))
+    result))
 
 ;;;;; Git Parse Repo Status
 ;; See https://kitchingroup.cheme.cmu.edu/blog/2014/09/19/A-git-status-Emacs-modeline/
@@ -962,14 +1054,14 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
          (face-prefix (if (not prefix) face-modeline
                         (if active
-                            (cond ((eq status 'read-only)  'lambda-line-active-status-RO)
-                                  ((eq status 'read-write) 'lambda-line-active-status-RW)
-                                  ((eq status 'modified)   'lambda-line-active-status-MD)
+                            (cond ((eq status 'read-only)  (lambda-line--apply-status-face 'lambda-line-active-status-RO))
+                                  ((eq status 'read-write) (lambda-line--apply-status-face 'lambda-line-active-status-RW))
+                                  ((eq status 'modified)   (lambda-line--apply-status-face 'lambda-line-active-status-MD))
                                   (explicit-face-prefix-active explicit-face-prefix-active)
                                   (t                       'lambda-line-active))
-                          (cond ((eq status 'read-only)  'lambda-line-inactive-status-RO)
-                                ((eq status 'read-write) 'lambda-line-inactive-status-RW)
-                                ((eq status 'modified)   'lambda-line-inactive-status-MD)
+                          (cond ((eq status 'read-only)  (lambda-line--apply-status-face 'lambda-line-inactive-status-RO))
+                                ((eq status 'read-write) (lambda-line--apply-status-face 'lambda-line-inactive-status-RW))
+                                ((eq status 'modified)   (lambda-line--apply-status-face 'lambda-line-inactive-status-MD))
                                 (explicit-face-prefix-inactive explicit-face-prefix-inactive)
                                 (t                       'lambda-line-inactive)))))
          (face-name (if active
@@ -1051,12 +1143,14 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
         (mode-name   (lambda-line-mode-name))
         (vc-info     (lambda-line--vc-info))
         (prog-info   (lambda-line--prog-mode-info))
+        (lsp-info    (lambda-line--lsp-status))
         (position    (format-mode-line lambda-line-position-format)))
     (lambda-line-compose (lambda-line-status)
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
                          (concat lambda-line-display-group-start mode-name
                                  (when vc-info vc-info)
                                  (when prog-info prog-info)
+                                 (when lsp-info lsp-info)
                                  lambda-line-display-group-end)
 
                          (concat
