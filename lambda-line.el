@@ -769,7 +769,7 @@ Otherwise show '-'."
                                                    'error
                                                  'warning))))
                        (propertize "Good " 'face 'success)))
-          ('running (propertize "Checking " 'face 'info))
+          ('running (propertize "Checking " 'face 'flycheck-info))
           ('errored (propertize "Error " 'face 'error))
           ('interrupted (propertize "Paused " 'face 'fringe))
           ('no-checker ""))))
@@ -1072,7 +1072,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                           (if lambda-line-syntax
                               (if (or (boundp 'flycheck-mode)
                                       (boundp 'flymake-mode))
-                                  ;; (concat position lambda-line-hspace)
+                                  (concat position lambda-line-hspace)
                                   position)
                             position)
 
