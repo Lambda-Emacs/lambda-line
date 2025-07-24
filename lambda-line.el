@@ -777,10 +777,11 @@ Otherwise show '-'."
                      (format "-%s" (match-string 2 plus-minus)))
                   "")))))))
 
-(define-advice vc-git-mode-line-string (:filter-return (result file) lambda-line-git-diff)
+(define-advice vc-git-mode-line-string (:filter-return (result &rest args) lambda-line-git-diff)
   "Add git diff information to mode-line."
-  (if lambda-line-git-diff-mode-line
-      (concat result (lambda-line--get-git-diff file))
+  (if (and lambda-line-git-diff-mode-line
+           (car args))  ; Check if file argument was provided
+      (concat result (lambda-line--get-git-diff (car args)))
     result))
 
 ;;;;; Git Parse Repo Status
