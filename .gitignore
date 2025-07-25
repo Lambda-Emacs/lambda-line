@@ -1,0 +1,41 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Generated documentation
+README.html
+*.html
+
+# Temporary/scrap files
+*-scrap.el
+scrap-*.el
+*-scratch.el
+
+# Old/backup files
+old-*.el
+*.old
+*~
+\#*\#
+
+# Alternative implementations
+alt/
+alternative/
+
+# Test files
+test-*.el
+*-test.el
+
+# Other project files
+nano-*.el
+
+# Compiled files
+*.elc
+
+# Package files
+*-autoloads.el
+*-pkg.el

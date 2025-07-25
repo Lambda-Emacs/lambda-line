@@ -760,7 +760,7 @@ Otherwise show '-'."
 ;; https://cocktailmake.github.io/posts/emacs-modeline-enhancement-for-git-diff/
 (defun lambda-line--get-git-diff (file)
   "Get cached git diff information for FILE."
-  (when lambda-line-git-diff-mode-line
+  (when (and lambda-line-git-diff-mode-line file)
     (if (and lambda-line--cache-git-diff
              (not (lambda-line--cache-expired-p)))
         lambda-line--cache-git-diff
@@ -777,12 +777,13 @@ Otherwise show '-'."
                      (format "-%s" (match-string 2 plus-minus)))
                   "")))))))
 
-(define-advice vc-git-mode-line-string (:filter-return (result file) lambda-line-git-diff)
+(define-advice vc-git-mode-line-string (:around (orig-fun &rest args) lambda-line-git-diff)
   "Add git diff information to mode-line."
-  (if (and lambda-line-git-diff-mode-line
-           file)
-      (concat result (lambda-line--get-git-diff file))
-    result))
+  (let ((result (apply orig-fun args)))
+    (if (and lambda-line-git-diff-mode-line
+             (car args))
+        (concat result (lambda-line--get-git-diff (car args)))
+      result)))
 
 ;;;;; Git Parse Repo Status
 ;; See https://kitchingroup.cheme.cmu.edu/blog/2014/09/19/A-git-status-Emacs-modeline/
@@ -1954,7 +1955,7 @@ depending on the version of mu4e."
                       (let* ((config (cdr elt))
                              (mode-p (plist-get config :mode-p))
                              (format (plist-get config :format)))
-                        (when mode-p
+                        (when (and mode-p (functionp mode-p))
                           (when (funcall mode-p)
                             (throw 'found format))))))
                   lambda-line-default-mode-format))))))
