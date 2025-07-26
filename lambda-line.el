@@ -777,13 +777,19 @@ Otherwise show '-'."
                      (format "-%s" (match-string 2 plus-minus)))
                   "")))))))
 
-(define-advice vc-git-mode-line-string (:around (orig-fun &rest args) lambda-line-git-diff)
+(define-advice vc-git-mode-line-string (:around (orig-fun file) lambda-line-git-diff)
   "Add git diff information to mode-line."
-  (let ((result (apply orig-fun args)))
-    (if (and lambda-line-git-diff-mode-line
-             (car args))
-        (concat result (lambda-line--get-git-diff (car args)))
-      result)))
+  (condition-case err
+      (let ((result (funcall orig-fun file)))
+        (if (and lambda-line-git-diff-mode-line
+                 file
+                 (stringp result))
+            (concat result (lambda-line--get-git-diff file))
+          result))
+    (error
+     ;; If there's an error, just return empty string to avoid breaking mode-line
+     (message "lambda-line git diff error: %s" err)
+     "")))
 
 ;;;;; Git Parse Repo Status
 ;; See https://kitchingroup.cheme.cmu.edu/blog/2014/09/19/A-git-status-Emacs-modeline/
@@ -1096,7 +1102,11 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
            (propertize primary 'face face-primary)))
 
-          (tertiary (if (not (string-empty-p tertiary)) tertiary (funcall lambda-line-default-tertiary-function)))
+          (tertiary (if (not (string-empty-p tertiary)) 
+                       tertiary 
+                     (if lambda-line-default-tertiary-function
+                         (funcall lambda-line-default-tertiary-function)
+                       "")))
 
           (right (concat
                    (propertize tertiary 'face face-tertiary)
