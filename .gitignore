@@ -39,3 +39,8 @@ nano-*.el
 # Package files
 *-autoloads.el
 *-pkg.el
+
+# Documentation and notes (keep local only)
+EMACS_30_FIXES.md
+*_FIXES.md
+NOTES.md
