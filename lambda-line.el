@@ -37,6 +37,25 @@
 (require 'cl-lib)
 (require 'all-the-icons)
 
+;; Declare optional functions to suppress compiler warnings
+(declare-function magit-get-current-branch "magit-git")
+(declare-function magit-toplevel "magit-repos")
+(declare-function flycheck-count-errors "flycheck")
+(declare-function lsp-workspaces "lsp-mode")
+(declare-function eglot-managed-p "eglot")
+(declare-function vc-git--run-command-string "vc-git")
+(declare-function mu4e-message-at-point "mu4e-view")
+(declare-function mu4e-message-field "mu4e-message")
+(declare-function mu4e-context-current "mu4e-context")
+(declare-function mu4e-context-name "mu4e-context")
+(declare-function elfeed-entry-title "elfeed-show")
+(declare-function elfeed-entry-tags "elfeed-show")
+(declare-function elfeed-db-last-update "elfeed-db")
+(declare-function org-capture-get "org-capture")
+(declare-function doc-view-current-page "doc-view")
+(declare-function pdf-cache-number-of-pages "pdf-cache")
+(declare-function Info-toc-nodes "info")
+
 ;;;; Group
 
 (defgroup lambda-line nil
