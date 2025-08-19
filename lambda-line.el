@@ -344,7 +344,11 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-magit-mode
                             :abbrev "MG"
                             :prefix-symbol " ✨")
-    (markdown-mode          :abbrev "MD")
+    (org-mode               :mode-p lambda-line-org-mode-p
+                            :format lambda-line-org-mode)
+    (markdown-mode          :mode-p lambda-line-markdown-mode-p
+                            :format lambda-line-markdown-mode
+                            :abbrev "MD")
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
@@ -443,6 +447,31 @@ This is if no match could be found in `lambda-lines-mode-formats'"
 (defcustom lambda-line-lsp-indicator t
   "Show LSP/Eglot server status in modeline."
   :type 'boolean
+  :group 'lambda-line)
+
+(defcustom lambda-line-word-count-enabled nil
+  "When non-nil, show word count in status-line for applicable modes."
+  :type 'boolean
+  :group 'lambda-line)
+
+(defcustom lambda-line-word-count-modes '(org-mode markdown-mode text-mode)
+  "List of major modes where word count should be displayed."
+  :type '(repeat symbol)
+  :group 'lambda-line)
+
+(defcustom lambda-line-word-count-format " %d "
+  "Format string for word count display. %d is replaced with count."
+  :type 'string
+  :group 'lambda-line)
+
+(defcustom lambda-line-word-count-symbol "Ⓦ "
+  "Symbol to display before word count. Unicode options: w ⓦ ω § ¶ # ∑"
+  :type 'string
+  :group 'lambda-line)
+
+(defcustom lambda-line-word-count-separator " ∙ "
+  "Separator to display after word count. Unicode options: ∙ • · | - ‖ │"
+  :type 'string
   :group 'lambda-line)
 
 ;;;; Faces
@@ -657,6 +686,10 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   "Cached VC backend for current buffer.")
 (defvar-local lambda-line--cache-git-diff nil
   "Cached git diff information for current buffer.")
+(defvar-local lambda-line--cache-word-count nil
+  "Cached word count for current buffer.")
+(defvar-local lambda-line--cache-word-count-tick nil
+  "Buffer modification tick when word count was cached.")
 (defvar-local lambda-line--cache-timestamp nil
   "Timestamp of last cache update.")
 
@@ -676,6 +709,8 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   (setq lambda-line--cache-project-name nil
         lambda-line--cache-vc-backend nil
         lambda-line--cache-git-diff nil
+        lambda-line--cache-word-count nil
+        lambda-line--cache-word-count-tick nil
         lambda-line--cache-timestamp nil))
 
 (defun lambda-line--update-cache-timestamp ()
@@ -718,6 +753,37 @@ This is if no match could be found in `lambda-lines-mode-formats'"
       (propertize " LSP?" 'face '(:inherit warning)))
      (t ""))))
 
+;;;;; Word Count
+;; -------------------------------------------------------------------
+(defun lambda-line--calculate-word-count ()
+  "Calculate word count for current buffer using built-in count-words."
+  (save-excursion
+    (save-restriction
+      (widen)
+      (count-words (point-min) (point-max)))))
+
+(defun lambda-line-word-count ()
+  "Return formatted word count string with caching."
+  (when (and lambda-line-word-count-enabled
+             (memq major-mode lambda-line-word-count-modes))
+    (let ((current-tick (buffer-chars-modified-tick)))
+      ;; Check if cache is valid
+      (unless (and lambda-line--cache-word-count
+                   lambda-line--cache-word-count-tick
+                   (= current-tick lambda-line--cache-word-count-tick))
+        ;; Update cache
+        (setq lambda-line--cache-word-count (lambda-line--calculate-word-count)
+              lambda-line--cache-word-count-tick current-tick))
+      ;; Return formatted string
+      (when lambda-line--cache-word-count
+        (concat
+         " "  ; Leading space for separation
+         (propertize lambda-line-word-count-symbol 
+                     'face 'lambda-line-active-tertiary)
+         (propertize (format "%d" lambda-line--cache-word-count)
+                     'face 'lambda-line-active-tertiary)
+         (propertize lambda-line-word-count-separator
+                     'face 'lambda-line-active-tertiary))))))
 
 ;;;;; Branch display
 ;; -------------------------------------------------------------------
@@ -1234,6 +1300,39 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 (defun lambda-line-text-mode ()
   (lambda-line-default-mode))
 
+;;;;; Org Mode
+
+(defun lambda-line-org-mode-p ()
+  (derived-mode-p 'org-mode))
+
+(defun lambda-line-org-mode ()
+  (let ((buffer-name (format-mode-line (if buffer-file-name
+                                           (file-name-nondirectory (buffer-file-name))
+                                         "%b")))
+        (mode-name   (lambda-line-mode-name))
+        (vc-info     (lambda-line--vc-info))
+        (word-count  (lambda-line-word-count))
+        (position    (format-mode-line lambda-line-position-format)))
+    (lambda-line-compose (lambda-line-status)
+                         (lambda-line-truncate buffer-name lambda-line-truncate-value)
+                         (concat lambda-line-display-group-start
+                                 mode-name
+                                 (when vc-info vc-info)
+                                 lambda-line-display-group-end)
+                         (or word-count "")
+                         (concat (when (buffer-narrowed-p)
+                                   (propertize "⇥ " 'face `(:inherit lambda-line-inactive-secondary)))
+                                 position
+                                 (lambda-line-time)))))
+
+;;;;; Markdown Mode
+
+(defun lambda-line-markdown-mode-p ()
+  (derived-mode-p 'markdown-mode))
+
+(defun lambda-line-markdown-mode ()
+  ;; Same implementation as org-mode
+  (lambda-line-org-mode))
 
 ;;;;; Help (& Helpful) Mode
 (defun lambda-line-help-mode-p ()
@@ -2092,6 +2191,18 @@ below or a buffer local variable 'no-mode-line'."
 
   ;; Run any registered hooks
   (run-hooks 'lambda-line-mode-hook))
+
+;;;; Interactive Commands
+
+;;;###autoload
+(defun lambda-line-toggle-word-count ()
+  "Toggle word count display in lambda-line."
+  (interactive)
+  (setq lambda-line-word-count-enabled (not lambda-line-word-count-enabled))
+  (lambda-line--invalidate-cache)
+  (force-mode-line-update t)
+  (message "Lambda-line word count %s" 
+           (if lambda-line-word-count-enabled "enabled" "disabled")))
 
 ;;; Provide:
 (provide 'lambda-line)
