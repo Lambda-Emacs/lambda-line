@@ -1121,8 +1121,8 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
            (propertize primary 'face face-primary)))
 
-          (tertiary (if (not (string-empty-p tertiary)) 
-                       tertiary 
+          (tertiary (if (and tertiary (not (string-empty-p tertiary)))
+                       tertiary
                      (if lambda-line-default-tertiary-function
                          (funcall lambda-line-default-tertiary-function)
                        "")))
