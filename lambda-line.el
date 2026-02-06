@@ -1104,6 +1104,11 @@ Optionally use another clockface font."
 Each section is first defined, along with a measure of the width of the status-line.
 STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed only in some modes."
   (let* ((window (get-buffer-window (current-buffer)))
+         ;; Ensure all parameters are strings to prevent length calculation errors
+         (name (or name ""))
+         (primary (or primary ""))
+         (tertiary (or tertiary ""))
+         (secondary (or secondary ""))
 
          (name-max-width (max 12
                               (- (window-body-width)
@@ -1190,7 +1195,10 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
           (tertiary (if (not (string-empty-p tertiary)) 
                        tertiary 
                      (if lambda-line-default-tertiary-function
-                         (funcall lambda-line-default-tertiary-function)
+                         (condition-case nil
+                           (let ((result (funcall lambda-line-default-tertiary-function)))
+                             (if (stringp result) result ""))
+                           (error ""))
                        "")))
 
           (right (concat
@@ -1800,12 +1808,15 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-mu4e-context ()
   "Return the current mu4e context as a non propertized string."
-  (if (> (length (mu4e-context-name (mu4e-context-current))) 0)
-      (concat
-       lambda-line-display-group-start
-       (substring-no-properties (mu4e-context-name (mu4e-context-current)))
-       lambda-line-display-group-end)
-    "(none)"))
+  (condition-case nil
+    (let ((context (mu4e-context-current)))
+      (if (and context (> (length (mu4e-context-name context)) 0))
+          (concat
+           lambda-line-display-group-start
+           (substring-no-properties (mu4e-context-name context))
+           lambda-line-display-group-end)
+        "(none)"))
+    (error "(none)")))
 
 (defun lambda-line-mu4e-server-props ()
   "Encapsulates the call to the variable mu4e-/~server-props
@@ -1827,8 +1838,10 @@ depending on the version of mu4e."
 
 (defun lambda-line-mu4e-dashboard-mode ()
   (lambda-line-compose (lambda-line-status)
-                       (format "%d messages"
-                               (plist-get (lambda-line-mu4e-server-props) :doccount))
+                       (condition-case nil
+                         (format "%d messages"
+                                 (or (plist-get (lambda-line-mu4e-server-props) :doccount) 0))
+                         (error "0 messages"))
                        ""
                        ""
                        (lambda-line-time)))
@@ -1861,18 +1874,27 @@ depending on the version of mu4e."
 
 (defun lambda-line-mu4e-compose-mode ()
   (lambda-line-compose (lambda-line-status)
-                       (format-mode-line "%b")
+                       (or (ignore-errors (format-mode-line "%b")) 
+                           (buffer-name) 
+                           "Compose")
                        ""
                        ""
-                       (format "[%s] "
-                               (lambda-line-mu4e-quote
-                                (mu4e-context-name (mu4e-context-current))))))
+                       (condition-case nil
+                         (let ((context (mu4e-context-current)))
+                           (if context
+                               (format "[%s] "
+                                       (lambda-line-mu4e-quote
+                                        (mu4e-context-name context)))
+                             "[none] "))
+                         (error "[none] "))))
 
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-quote (str)
-  (if (version< mu4e-mu-version "1.8.0")
-      (mu4e~quote-for-modeline str)
-    (mu4e-quote-for-modeline str)))
+  (condition-case nil
+    (if (version< mu4e-mu-version "1.8.0")
+        (mu4e~quote-for-modeline str)
+      (mu4e-quote-for-modeline str))
+    (error (or str ""))))
 
 (defun lambda-line-mu4e-headers-mode-p ()
   (derived-mode-p 'mu4e-headers-mode))
@@ -1886,9 +1908,14 @@ depending on the version of mu4e."
           (lambda-line-mu4e-last-query)) "")
      ""
      (concat
-      (format "[%s] "
-              (lambda-line-mu4e-quote
-               (mu4e-context-name (mu4e-context-current))))
+      (condition-case nil
+        (let ((context (mu4e-context-current)))
+          (if context
+              (format "[%s] "
+                      (lambda-line-mu4e-quote
+                       (mu4e-context-name context)))
+            "[none] "))
+        (error "[none] "))
       (or (lambda-line-time) "")))))
 
 ;; ---------------------------------------------------------------------
@@ -1896,17 +1923,19 @@ depending on the version of mu4e."
   (derived-mode-p 'mu4e-view-mode))
 
 (defun lambda-line-mu4e-view-mode ()
-  (let* ((msg     (mu4e-message-at-point))
-         (subject (mu4e-message-field msg :subject))
-         (from    (mu4e~headers-contact-str (mu4e-message-field msg :from)))
-         (date    (mu4e-message-field msg :date)))
-    (lambda-line-compose (lambda-line-status)
-                         (or from "")
-                         (concat lambda-line-display-group-start
-                                 (lambda-line-truncate (or subject "") 50 "…")
-                                 lambda-line-display-group-end)
-                         ""
-                         (concat (or (format-time-string mu4e-headers-date-format date) "") " "))))
+  (condition-case nil
+    (let* ((msg     (mu4e-message-at-point))
+           (subject (and msg (mu4e-message-field msg :subject)))
+           (from    (and msg (mu4e~headers-contact-str (mu4e-message-field msg :from))))
+           (date    (and msg (mu4e-message-field msg :date))))
+      (lambda-line-compose (lambda-line-status)
+                           (or from "")
+                           (concat lambda-line-display-group-start
+                                   (lambda-line-truncate (or subject "") 50 "…")
+                                   lambda-line-display-group-end)
+                           ""
+                           (concat (or (and date (format-time-string mu4e-headers-date-format date)) "") " ")))
+    (error (lambda-line-compose (lambda-line-status) "Email" "" "" ""))))
 
 (defun lambda-line-mu4e-activate ()
   (with-eval-after-load 'mu4e
@@ -2077,16 +2106,21 @@ depending on the version of mu4e."
   "Build and set the modeline."
   (let* ((format
           '((:eval
-             (funcall
-              (or (catch 'found
-                    (dolist (elt lambda-line-mode-formats)
-                      (let* ((config (cdr elt))
-                             (mode-p (plist-get config :mode-p))
-                             (format (plist-get config :format)))
-                        (when (and mode-p (functionp mode-p))
-                          (when (funcall mode-p)
-                            (throw 'found format))))))
-                  lambda-line-default-mode-format))))))
+             (condition-case err
+               (let* ((format-func (or (catch 'found
+                                         (dolist (elt lambda-line-mode-formats)
+                                           (let* ((config (cdr elt))
+                                                  (mode-p (plist-get config :mode-p))
+                                                  (format (plist-get config :format)))
+                                             (when (and mode-p (functionp mode-p))
+                                               (when (funcall mode-p)
+                                                 (throw 'found format))))))
+                                       lambda-line-default-mode-format))
+                      (result (when (functionp format-func) (funcall format-func))))
+                 (if (stringp result)
+                     result
+                   (format "lambda-line error: function %S returned %S (expected string)" format-func result)))
+               (error (format "lambda-line error: %S" err)))))))
     (if (eq lambda-line-position 'top)
         (progn
           (setq header-line-format format)
