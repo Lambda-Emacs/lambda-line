@@ -1106,6 +1106,41 @@ MODE-FORMAT is the buffer's mode-format pair."
 
 
 ;;;;; Compose Status-Line
+;;
+;; Arguments and when they are used:
+;;
+;; - status (symbol or nil): Drives the prefix symbol and faces
+;;   - if provided (`read-only', `read-write', `modified'), use directly
+;;   - if nil, computed via function `lambda-line-status'
+;;   - if function `window-dedicated-p' is true, use "––"/"--"
+;;
+;; - name(string or nil): Displayed on the left.
+;;   - truncated if longer than `name-max-width'.
+;;
+;; - primary (string or nil): Left-segment text shown after `name'
+;;
+;; - secondary (string or nil): Right-segment text (placed after `tertiary')
+;;
+;; - tertiary (string or nil): Right-segment text placed before `secondary'
+;;   - if provided, use directly
+;;   - else if it is set, call and use result of `lambda-line-default-tertiary-function'
+;;   - else, omit
+;;
+;; - prefix (string or nil): Status/mode indicator placed before `name'
+;;   - if `prefix' is a string: use verbatim
+;;   - else if 'lambda-line-prefix' is nil: omit
+;;   - else if provided, use mode config's :prefix-symbol
+;;   - else default prefix is chosen by buffer `status' and display type
+;;
+;;
+;; - modeline and segment parts faces:
+;;   - if prefix is nil, face-modeline
+;;   - else active window status determines faces
+;;
+;; - modeline content:
+;;   -  left: prefix-padding-left + prefix + prefix-padding + name + " " + primary + " "
+;;   - right: tertiary + secondary + hspace
+;;
 (defun lambda-line-compose (mode-format status name primary tertiary secondary &optional prefix)
   "Compose a string with provided information.
 MODE-FORMAT is the mode-format pair being applied.
