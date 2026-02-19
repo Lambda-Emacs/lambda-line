@@ -690,6 +690,8 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   "Buffer modification tick when word count was cached.")
 (defvar-local lambda-line--cache-timestamp nil
   "Timestamp of last cache update.")
+(defvar-local lambda-line--cache-mode-format nil
+  "Cached mode-format pair for current buffer.")
 
 (defcustom lambda-line-cache-duration 2.0
   "Duration in seconds to cache expensive operations."
@@ -709,17 +711,23 @@ This is if no match could be found in `lambda-lines-mode-formats'"
         lambda-line--cache-git-diff nil
         lambda-line--cache-word-count nil
         lambda-line--cache-word-count-tick nil
-        lambda-line--cache-timestamp nil))
+        lambda-line--cache-timestamp nil
+        lambda-line--cache-mode-format nil))
 
 (defun lambda-line--update-cache-timestamp ()
   "Update cache timestamp."
   (setq lambda-line--cache-timestamp (current-time)))
+
+(defun lambda-line--invalidate-mode-format-cache ()
+  "Invalidate the mode-format cache."
+  (setq lambda-line--cache-mode-format nil))
 
 ;; Cache invalidation hooks
 (add-hook 'after-save-hook #'lambda-line--invalidate-cache)
 (add-hook 'after-revert-hook #'lambda-line--invalidate-cache)
 (add-hook 'vc-checkin-hook #'lambda-line--invalidate-cache)
 (add-hook 'find-file-hook #'lambda-line--invalidate-cache)
+(add-hook 'after-change-major-mode-hook #'lambda-line--invalidate-mode-format-cache)
 
 ;;;;; Version Control
 ;; -------------------------------------------------------------------
@@ -2131,27 +2139,33 @@ depending on the version of mu4e."
   "Update selected window (before mode-line is active)"
   (setq lambda-line--selected-window (selected-window)))
 
+(defun lambda-line-mode--buffer-format ()
+  "Return the buffer's mode-format pair, from cached else from searching."
+  (condition-case err
+    (let* ((mode-format
+             (or lambda-line--cache-mode-format
+                 (catch 'found
+                   (dolist (elt lambda-line-mode-formats)
+                     (let* ((mode (car elt))
+                            (mode-p (plist-get (cdr elt) :mode-p)))
+                       (when (if mode-p
+                                 (funcall mode-p)
+                               (derived-mode-p mode))
+                         (throw 'found elt)))))))
+           (config (cdr mode-format))
+           (format-func (or (plist-get config :format)
+                            lambda-line-default-mode-format))
+           (result (when (functionp format-func) (funcall format-func mode-format))))
+      (if (not (stringp result))
+          (format "lambda-line error: function %S returned %S (expected string)" format-func result)
+        (unless display-time-mode
+          (setq-local lambda-line--cache-mode-format mode-format))
+        result))
+    (error (format "lambda-line error: %S" err))))
+
 (defun lambda-line ()
   "Build and set the modeline."
-  (let* ((caught nil)
-         (format
-          '((:eval
-             (condition-case err
-               (let* ((format-func (or (catch 'found
-                                         (dolist (elt lambda-line-mode-formats)
-                                           (let* ((config (cdr elt))
-                                                  (mode-p (plist-get config :mode-p))
-                                                  (format (plist-get config :format)))
-                                             (when (and mode-p (functionp mode-p))
-                                               (when (funcall mode-p)
-                                                 (setq caught elt)
-                                                 (throw 'found format))))))
-                                       lambda-line-default-mode-format))
-                      (result (when (functionp format-func) (funcall format-func caught))))
-                 (if (stringp result)
-                     result
-                   (format "lambda-line error: function %S returned %S (expected string)" format-func result)))
-               (error (format "lambda-line error: %S" err)))))))
+  (let* ((format '(:eval (lambda-line-mode--buffer-format))))
     (if (eq lambda-line-position 'top)
         (progn
           (setq header-line-format format)
