@@ -676,6 +676,11 @@ This is if no match could be found in `lambda-lines-mode-formats'"
         (pref " ")
         (t "")))
 
+;;;;; Get mode-formats
+(defun lambda-line-mode-format (mode)
+  "Return the mode-format pair for MODE."
+  (seq-find (lambda (mode-format) (eq mode (car mode-format))) lambda-line-mode-formats))
+
 ;;;;; Performance Caching
 ;; -------------------------------------------------------------------
 (defvar-local lambda-line--cache-project-name nil
