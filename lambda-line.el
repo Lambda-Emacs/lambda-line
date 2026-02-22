@@ -1467,7 +1467,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-term-mode (mode-format)
   (lambda-line-compose mode-format
-                       " >_ "
+                       (plist-get (cdr mode-format) :prefix-symbol)
                        (plist-get (cdr mode-format) :name)
                        (concat lambda-line-display-group-start
                                (file-name-nondirectory shell-file-name)
@@ -1490,7 +1490,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-ssh-mode (mode-format)
   (lambda-line-compose mode-format
-                       " >_ "
+                       (or (plist-get (cdr mode-format) :prefix-symbol) " >_ ")
                        "Terminal"
                        (concat lambda-line-display-group-start
                                (lambda-line-get-ssh-host default-directory)
@@ -1507,7 +1507,7 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-shell-mode (mode-format)
   (lambda-line-compose mode-format
-                       " >_ "
+                       (plist-get (cdr mode-format) :prefix-symbol)
                        (plist-get (cdr mode-format) :name)
                        (concat lambda-line-display-group-start
                                (buffer-name)
