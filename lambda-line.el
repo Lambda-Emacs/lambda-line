@@ -249,11 +249,6 @@ Time info is only shown `display-time-mode' is non-nil"
                             :format lambda-line-org-capture-mode
                             :on-activate lambda-line-org-capture-activate
                             :on-deactivate lambda-line-org-capture-deactivate)
-    (prog-mode              :mode-p lambda-line-prog-mode-p
-                            :format lambda-line-prog-mode
-                            :on-activate lambda-line-prog-activate
-                            :on-deactivate lambda-line-prog-deactivate
-                            :abbrev "PR")
     (mu4e-dashboard-mode    :mode-p lambda-line-mu4e-dashboard-mode-p
                             :format lambda-line-mu4e-dashboard-mode)
     (messages-mode          :mode-p lambda-line-messages-mode-p
@@ -318,8 +313,6 @@ Time info is only shown `display-time-mode' is non-nil"
     (elpher-mode            :mode-p lambda-line-elpher-mode-p
                             :format lambda-line-elpher-mode
                             :on-activate lambda-line-elpher-activate)
-    (emacs-lisp-mode        :abbrev "λ"
-                            :prefix-symbol " λ")
     (gud-mode               :prefix-symbol " 🐞"
                             :face-prefix-active 'lambda-line-active-status-MD
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
@@ -345,9 +338,6 @@ Time info is only shown `display-time-mode' is non-nil"
                             :prefix-symbol " ℹ"
                             :face-prefix-active 'lambda-line-active-status-RO
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
-                            :always-modifiable t)
-    (lisp-interaction-mode  :abbrev "λΙ"
-                            :prefix-symbol " λΙ"
                             :always-modifiable t)
     (magit-mode             :mode-p lambda-line-magit-mode-p
                             :format lambda-line-magit-mode
@@ -378,7 +368,28 @@ Time info is only shown `display-time-mode' is non-nil"
                             :on-deactivate lambda-line-org-clock-deactivate)
     (pdf-view-mode          :mode-p lambda-line-pdf-view-mode-p
                             :format lambda-line-pdf-view-mode)
-    (python-mode            :abbrev "PY")
+
+    ;; put above emacs-lisp-mode of which it is a derivative:
+    (lisp-interaction-mode  :abbrev "λΙ"
+                            :prefix-symbol " λΙ"
+                            :always-modifiable t)
+    (emacs-lisp-mode        :abbrev "λ"
+                            :prefix-symbol " λ"
+                            :format lambda-line-prog-mode
+                            :on-activate lambda-line-prog-activate
+                            :on-deactivate lambda-line-prog-deactivate)
+    (python-mode            :abbrev "PY"
+                            :format lambda-line-prog-mode
+                            :on-activate lambda-line-prog-activate
+                            :on-deactivate lambda-line-prog-deactivate)
+
+    ;; put prog-mode after all its derivatives:
+    (prog-mode              :mode-p lambda-line-prog-mode-p
+                            :format lambda-line-prog-mode
+                            :on-activate lambda-line-prog-activate
+                            :on-deactivate lambda-line-prog-deactivate
+                            :abbrev "PR")
+
     (fundamental-mode       :mode-p lambda-line-fundamental-mode-p
                             :format lambda-line-fundamental-mode
                             :abbrev "F")
