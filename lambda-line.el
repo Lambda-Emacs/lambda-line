@@ -299,6 +299,7 @@ Time info is only shown `display-time-mode' is non-nil"
                             :prefix-symbol " DEFT ")
     (dired-mode             :mode-p lambda-line-dired-mode-p
                             :format lambda-line-dired-mode
+                            :status lambda-line-modified-status
                             :abbrev "Dir"
                             :prefix-symbol " 📂"
                             :utilize-status t)
@@ -1113,7 +1114,7 @@ Optionally use another clockface font."
            'display '(raise 0)))))))
 
 ;;;;; Status
-(defun lambda-line-status (mode-format)
+(defun lambda-line-default-status (mode-format)
   "Return buffer status, one of 'read-only, 'modified or 'read-write.
 MODE-FORMAT is the buffer's mode-format pair."
 
@@ -1124,6 +1125,22 @@ MODE-FORMAT is the buffer's mode-format pair."
           (read-only 'read-only)
           (t         'read-write))))
 
+(defun lambda-line-modified-status (mode-format)
+  "Return buffer status for both the buffer's file and directory
+for the MODE-FORMAT."
+  (let ((read-only   (when (not (plist-get (cdr mode-format) :always-modifiable))
+                       buffer-read-only))
+        (modified    (buffer-modified-p)))
+    (cond (modified  'modified)
+          (read-only 'read-only)
+          (t         'read-write))))
+
+(defun lambda-line-status (mode-format)
+  "Return the buffer status, either the MODE-FORMAT's custom status
+or the default."
+  (funcall (or (plist-get (cdr mode-format) :status)
+               #'lambda-line-default-status)
+           mode-format))
 
 ;;;;; Compose Status-Line
 ;;
