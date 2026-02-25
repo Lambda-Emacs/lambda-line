@@ -300,7 +300,8 @@ Time info is only shown `display-time-mode' is non-nil"
     (dired-mode             :mode-p lambda-line-dired-mode-p
                             :format lambda-line-dired-mode
                             :abbrev "Dir"
-                            :prefix-symbol " 📂")
+                            :prefix-symbol " 📂"
+                            :utilize-status t)
     (doc-view-mode          :mode-p lambda-line-doc-view-mode-p
                             :format lambda-line-doc-view-mode)
     (elfeed-search-mode     :mode-p lambda-line-elfeed-search-mode-p
@@ -343,13 +344,15 @@ Time info is only shown `display-time-mode' is non-nil"
     (magit-mode             :mode-p lambda-line-magit-mode-p
                             :format lambda-line-magit-mode
                             :abbrev "MG"
-                            :prefix-symbol " ✨")
+                            :prefix-symbol " ✨"
+                            :utilize-status t)
     (org-mode               :mode-p lambda-line-org-mode-p
-                            :format lambda-line-org-mode)
-    (markdown-mode          :mode-p lambda-line-markdown-mode-p
-                            :format lambda-line-markdown-mode
+                            :format lambda-line-org-mode
+                            :utilize-status t)
+    (markdown-mode          :format lambda-line-org-mode  ; same implementation as org-mode
                             :abbrev "MD"
-                            :prefix-symbol " M↓")
+                            :prefix-symbol " M↓"
+                            :utilize-status t)
     (mu4e-compose-mode      :mode-p lambda-line-mu4e-compose-mode-p
                             :format lambda-line-mu4e-compose-mode)
     (mu4e-headers-mode      :mode-p lambda-line-mu4e-headers-mode-p
@@ -377,6 +380,7 @@ Time info is only shown `display-time-mode' is non-nil"
     (emacs-lisp-mode        :abbrev "λ"
                             :prefix-symbol " λ"
                             :format lambda-line-prog-mode
+                            :utilize-status t
                             :on-activate lambda-line-prog-activate
                             :on-deactivate lambda-line-prog-deactivate)
     (python-mode            :abbrev "PY"
@@ -1277,15 +1281,17 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 ;;;; Default display
 (defun lambda-line-default-mode (mode-format)
   "Compose the default status line."
-  (let ((buffer-name (format-mode-line (if buffer-file-name
+  (let* ((buffer-name (format-mode-line (if buffer-file-name
                                            (file-name-nondirectory (buffer-file-name))
                                          "%b")))
         (mode-name   (lambda-line-mode-name))
         (vc-info     (lambda-line--vc-info))
         (position    (format-mode-line lambda-line-position-format))
-        (explicit-prefix (plist-get (cdr mode-format) :prefix-symbol)))
+        (config      (cdr mode-format))
+        (explicit-prefix (plist-get config :prefix-symbol)))
     (lambda-line-compose mode-format
-                         (or explicit-prefix (lambda-line-status mode-format))
+                         (or (and (null (plist-get config :utilize-status)) explicit-prefix)
+                             (lambda-line-status mode-format))
                          (lambda-line-truncate buffer-name lambda-line-truncate-value)
                          (concat lambda-line-display-group-start
                                  mode-name
@@ -1399,9 +1405,6 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                  (lambda-line-time)))))
 
 ;;;;; Markdown Mode
-
-(defun lambda-line-markdown-mode-p ()
-  (derived-mode-p 'markdown-mode))
 
 (defun lambda-line-markdown-mode (mode-format)
   ;; Same implementation as org-mode
