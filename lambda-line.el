@@ -2169,6 +2169,11 @@ depending on the version of mu4e."
 (defvar lambda-line-git-parse-update-interval 15 "Minimum time between update in seconds")
 (defvar lambda-line-git-parse "" "Last value of the parse")
 
+(defun lambda-line-magit-status (git-status)
+  (if (string-match "M0|" git-status)
+      'read-write
+    'modified))
+
 (defun lambda-line-magit-mode (mode-format)
   (let* ((buffer-name (format-mode-line
                        (if buffer-file-name
@@ -2179,7 +2184,7 @@ depending on the version of mu4e."
          (branch      (magit-get-current-branch))
          (status      (lambda-line-git-parse-status)))
     (lambda-line-compose mode-format
-                         (lambda-line-status mode-format)
+                         (lambda-line-magit-status status)
                          mode-name
                          (concat lambda-line-display-group-start
                                  project
