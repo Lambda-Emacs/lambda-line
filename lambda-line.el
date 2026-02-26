@@ -290,8 +290,7 @@ Time info is only shown `display-time-mode' is non-nil"
     (completion-list-mode   :format lambda-line-completion-list-mode)
     (deft-mode              :format lambda-line-deft-mode
                             :prefix-symbol " DEFT ")
-    (dired-mode             :format lambda-line-dired-mode
-                            :status lambda-line-modified-status
+    (dired-mode             :status lambda-line-modified-status
                             :abbrev "Dir"
                             :prefix-symbol " 📂"
                             :utilize-status t)
@@ -371,10 +370,8 @@ Time info is only shown `display-time-mode' is non-nil"
                             :on-deactivate lambda-line-prog-deactivate
                             :abbrev "PR")
 
-    (fundamental-mode       :format lambda-line-fundamental-mode
-                            :abbrev "F")
-    (text-mode              :format lambda-line-text-mode
-                            :abbrev "TX")
+    (fundamental-mode       :abbrev "F")
+    (text-mode              :abbrev "TX")
 
     ;; hooks only go last
     (ein-notebook-mode      :on-activate lambda-line-ein-notebook-activate
@@ -670,25 +667,47 @@ MODE-FORMAT is the mode format pair."
         (pref " ")
         (t "")))
 
+
+;;;;; Other Helpers:
+
 (defun lambda-line--groom-mode-format (mode-format)
   "To support legacy user customizations, normalize MODE-FORMAT
 to ensure legacy compatibility."
   (let* ((mode (car mode-format))
-         (config (cdr mode-format))
-         (mode-p (plist-get config :mode-p))
-         (mode-p-doc (format "Check if buffer is in %s." mode)))
-    (if mode-p
-        ;; Handle callbacks that do not expect the mode-format argument:
-        (when (zerop (car (func-arity mode-p)))
-          (plist-put config :mode-p
-                     (eval `(defun ,(intern (format "lambda-line-mode-format-%s-p" mode)) (_mode-format)
-                              ,mode-p-doc
-                              (funcall #',mode-p)))))
-      ;; In case it's expected by users, ensure :mode-p is set:
-      (plist-put config :mode-p
-                 (eval `(defun ,(intern (format "lambda-line-%s-p" mode)) (mode-format)
-                          ,mode-p-doc
-                          (derived-mode-p #',mode)))))
+         (config (cdr mode-format)))
+
+    ;; In case it's expected by user code, ensure :mode-p is set;
+    ;; and also handle callbacks that do not expect the mode-format argument:
+    (let* ((mode-p (plist-get config :mode-p))
+           (wrap-mode-p (and (functionp mode-p) (zerop (car (func-arity mode-p)))))
+           (mode-p-doc (when (or wrap-mode-p (null mode-p)) (format "Check if buffer is in %s." mode))))
+      (if mode-p
+          (when wrap-mode-p
+            (plist-put config :mode-p
+                       (eval `(defun ,(intern (format "lambda-line-mode-format-check-%s-p" mode)) (_mode-format)
+                                ,mode-p-doc
+                                (funcall #',mode-p)))))
+        (plist-put config :mode-p
+                   (eval `(defun ,(intern (format "lambda-line-%s-p" mode)) (mode-format)
+                            ,mode-p-doc
+                            (derived-mode-p #',mode))))))
+
+    ;; In case it's expected by user code, ensure :format is set;
+    ;; and also handle callbacks that do not expect the mode-format argument:
+    (let* ((format (plist-get config :format))
+           (wrap-format (and (functionp format) (zerop (car (func-arity format)))))
+           (format-doc (when (or wrap-format (null format)) (format "Compose the status line for %s." mode))))
+      (if format
+          (when wrap-format
+            (plist-put config :format
+                       (eval `(defun ,(intern (format "lambda-line-apply-mode-format-%s" mode)) (_mode-format)
+                                ,format-doc
+                                (funcall #',format)))))
+        (plist-put config :format
+                   (eval `(defun ,(intern (format "lambda-line-%s-mode-format" mode)) (mode-format)
+                            ,format-doc
+                            (lambda-line-default-mode #',format))))))
+
     mode-format))
 
 ;;;;; Get mode-formats
@@ -1413,16 +1432,6 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
   (when lambda-line-git-diff-mode-line
     (remove-hook 'after-save-hook #'vc-refresh-state)))
 
-;;;;; Fundamental Mode
-
-(defun lambda-line-fundamental-mode (mode-format)
-  (lambda-line-default-mode mode-format))
-
-;;;;; Text Mode
-
-(defun lambda-line-text-mode (mode-format)
-  (lambda-line-default-mode mode-format))
-
 ;;;;; Org Mode
 
 (defun lambda-line-org-mode (mode-format)
@@ -1445,12 +1454,6 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                                    (propertize "⇥ " 'face `(:inherit lambda-line-inactive-secondary)))
                                  position
                                  (lambda-line-time)))))
-
-;;;;; Markdown Mode
-
-(defun lambda-line-markdown-mode (mode-format)
-  ;; Same implementation as org-mode
-  (lambda-line-org-mode mode-format))
 
 ;;;;; Help (& Helpful) Mode
 (defun lambda-line-help-mode (mode-format)
@@ -1689,11 +1692,6 @@ MODE-FORMAT is the mode format pair."
                      (format "%d matches" (length deft-current-files))
                    (format "%d notes" (length deft-all-files)))))
     (lambda-line-compose mode-format status primary filter nil matches)))
-
-;;;; Dired Mode
-
-(defun lambda-line-dired-mode (mode-format)
-  (lambda-line-default-mode mode-format))
 
 ;;;; Calendar Mode
 ;; ---------------------------------------------------------------------
