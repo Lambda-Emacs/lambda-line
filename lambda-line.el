@@ -33,28 +33,77 @@
 
 ;;; Code:
 
-(require 'face-remap)
 (require 'cl-lib)
+(require 'face-remap)
 (require 'all-the-icons)
 
-;; Declare optional functions to suppress compiler warnings
+;; Declare optional functions and variables to suppress compiler warnings
+(declare-function Info-toc-nodes "info")
+(declare-function deft-whole-filter-regexp "deft")
+(declare-function doc-view-current-page "doc-view")
+(declare-function doc-view-last-page-number "doc-view")
+(declare-function eglot-managed-p "eglot")
+(declare-function ein:header-line "ein-notification")
+(declare-function ein:notebook-modified-p "ein-notebook")
+(declare-function elfeed-db-last-update "elfeed-db")
+(declare-function elfeed-entry-date "elfeed")
+(declare-function elfeed-entry-feed "elfeed-db")
+(declare-function elfeed-entry-tags "elfeed-show")
+(declare-function elfeed-entry-title "elfeed-show")
+(declare-function elfeed-feed-title "elfeed-db")
+(declare-function elfeed-meta "elfeed-db")
+(declare-function elfeed-queue-count-active "elfeed")
+(declare-function elfeed-queue-count-total "elfeed")
+(declare-function elfeed-search--count-unread "elfeed-search")
+(declare-function elfeed-search--header "elfeed-search")
+(declare-function elpher-address-about-p "elpher-address-about-p")
+(declare-function elpher-address-protocol "elpher-address-protocol")
+(declare-function elpher-page-address "elpher")
+(declare-function elpher-page-display-string "elpher")
+(declare-function flycheck-count-errors "flycheck")
+(declare-function ispell-display-buffer "ispell")
+(declare-function lsp-workspaces "lsp-mode")
 (declare-function magit-get-current-branch "magit-git")
 (declare-function magit-toplevel "magit-repos")
-(declare-function flycheck-count-errors "flycheck")
-(declare-function lsp-workspaces "lsp-mode")
-(declare-function eglot-managed-p "eglot")
-(declare-function vc-git--run-command-string "vc-git")
-(declare-function mu4e-message-at-point "mu4e-view")
-(declare-function mu4e-message-field "mu4e-message")
 (declare-function mu4e-context-current "mu4e-context")
 (declare-function mu4e-context-name "mu4e-context")
-(declare-function elfeed-entry-title "elfeed-show")
-(declare-function elfeed-entry-tags "elfeed-show")
-(declare-function elfeed-db-last-update "elfeed-db")
+(declare-function mu4e-message-at-point "mu4e-view")
+(declare-function mu4e-message-field "mu4e-message")
+(declare-function mu4e-quote-for-modeline "mu4e-helpers")
+(declare-function mu4e~header-line-format "mu4e-headers")
+(declare-function mu4e~headers-contact-str "mu4e-headers")
+(declare-function mu4e~quote-for-modeline "mu4e-utils")
 (declare-function org-capture-get "org-capture")
-(declare-function doc-view-current-page "doc-view")
 (declare-function pdf-cache-number-of-pages "pdf-cache")
-(declare-function Info-toc-nodes "info")
+(declare-function vc-git--run-command-string "vc-git")
+(defvar deft-all-files)
+(defvar deft-current-files)
+(defvar deft-filter-regexp)
+(defvar ein:header-line-format)
+(defvar elfeed-search-filter)
+(defvar elfeed-search-filter-active)
+(defvar elfeed-search-header-function)
+(defvar elfeed-show-entry)
+(defvar elpher-current-page)
+(defvar elpher-use-header)
+(defvar flycheck-current-errors)
+(defvar lambda-line--selected-window)
+(defvar menu-list--displayed-buffer)
+(defvar mu4e--server-props)
+(defvar mu4e-headers-date-format)
+(defvar mu4e-modeline-max-width)
+(defvar mu4e-mu-version)
+(defvar mu4e~headers-last-query)
+(defvar mu4e~server-props)
+(defvar no-mode-line)
+
+(eval-when-compile
+  (require 'calendar)
+  (require 'esh-mode)
+  (require 'flymake)
+  (require 'org-agenda)
+  (require 'org-clock)
+  (require 'which-func))
 
 ;;;; Group
 
@@ -281,9 +330,9 @@ Time info is only shown `display-time-mode' is non-nil"
                             :face-prefix-active 'lambda-line-active-status-MD
                             :face-prefix-inactive 'lambda-line-inactive-status-RW
                             :always-modifiable t)
-    (buffer-menu-mode       :format lambda-line-buffer-menu-mode
-                            :on-activate lambda-line-buffer-menu-activate
-                            :on-deactivate lambda-line-buffer-menu-deactivate)
+    (Buffer-menu-mode       :format lambda-line-Buffer-menu-mode
+                            :on-activate lambda-line-Buffer-menu-activate
+                            :on-deactivate lambda-line-Buffer-menu-deactivate)
     (calendar-mode          :format lambda-line-calendar-mode
                             :on-activate lambda-line-calendar-activate
                             :on-deactivate lambda-line-calendar-deactivate)
@@ -603,8 +652,8 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   "Blink the status-line red briefly. Set `ring-bell-function' to this to use it."
   (let ((lambda-line--bell-cookie (if (eq lambda-line-position 'bottom)
                                       (face-remap-add-relative 'lambda-line 'lambda-line-visual-bell)
-                                    (face-remap-add-relative 'header-line 'lambda-line-visual-bell)))
-        (force-mode-line-update t))
+                                    (face-remap-add-relative 'header-line 'lambda-line-visual-bell))))
+    (force-mode-line-update t)
     (run-with-timer 0.15 nil
                     (lambda (cookie buf)
                       (with-current-buffer buf
@@ -1419,16 +1468,18 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
 
 (defun lambda-line-prog-activate ()
   "Setup flycheck hooks."
-  (add-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
-  (add-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
+  (when (featurep 'flycheck)
+    (add-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
+    (add-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment))
   (if lambda-line-git-diff-mode-line
     (add-hook 'after-save-hook #'vc-refresh-state)
     (remove-hook 'after-save-hook #'vc-refresh-state)))
 
 (defun lambda-line-prog-deactivate ()
   "Remove flycheck hooks."
-  (remove-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
-  (remove-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment)
+  (when (featurep 'flycheck)
+    (remove-hook 'flycheck-status-changed-functions #'lambda-line--update-flycheck-segment)
+    (remove-hook 'flycheck-mode-hook #'lambda-line--update-flycheck-segment))
   (when lambda-line-git-diff-mode-line
     (remove-hook 'after-save-hook #'vc-refresh-state)))
 
@@ -1622,7 +1673,7 @@ MODE-FORMAT is the mode format pair."
 (defun lambda-line-pdf-view-mode (mode-format)
   (let ((buffer-name (format-mode-line "%b"))
         (mode-name   (lambda-line-mode-name))
-        (vc-info     (funcall lambda-line-default-vc-mode-function))
+        (_vc-info    (funcall lambda-line-default-vc-mode-function))
         (page-number (concat
                       (number-to-string (eval `(pdf-view-current-page))) "/"
                       (or (ignore-errors
@@ -1636,17 +1687,6 @@ MODE-FORMAT is the mode format pair."
                          nil
                          (concat page-number " " (lambda-line-time)))))
 
-;;;; MenuMode
-
-(defun lambda-line-buffer-menu-mode (mode-format)
-  (let ((buffer-name "Buffer list")
-        (mode-name   (lambda-line-mode-name))
-        (position    (format-mode-line lambda-line-position-format)))
-
-    (lambda-line-compose mode-format
-                         (lambda-line-status mode-format)
-                         buffer-name "" nil (concat position lambda-line-hspace (lambda-line-time)))))
-
 ;;;; Imenu-List
 (defun lambda-line-imenu-list-mode-p (_mode-format)
   "Check if buffer is in imenu-list-major-mode.
@@ -1656,9 +1696,9 @@ MODE-FORMAT is the mode format pair."
 (defun lambda-line-imenu-list-mode (mode-format)
   (let (
         ;; We take into account the case of narrowed buffers
-        (buffer-name (buffer-name imenu-list--displayed-buffer))
-        (vc-info     (lambda-line--vc-info))
-        (position    (format-mode-line "%l:%c")))
+        (buffer-name (buffer-name menu-list--displayed-buffer))
+        (_vc-info    (lambda-line--vc-info))
+        (_position   (format-mode-line "%l:%c")))
     (lambda-line-compose mode-format
                          (lambda-line-status mode-format)
                          buffer-name
@@ -1695,16 +1735,15 @@ MODE-FORMAT is the mode format pair."
 
 ;;;; Calendar Mode
 ;; ---------------------------------------------------------------------
-(defun lambda-line-calendar-mode (mode-format) "")
+(defun lambda-line-calendar-mode (_mode-format) "")
 
 ;; Calendar (no header, only overline)
-(with-eval-after-load 'calendar
-  (defun lambda-line-calendar-setup-header ()
-    (setq header-line-format "")
-    (face-remap-add-relative
-     'header-line `(:overline ,(face-foreground 'default)
-                    :height 0.5
-                    :background ,(face-background 'default)))))
+(defun lambda-line-calendar-setup-header ()
+  (setq header-line-format "")
+  (face-remap-add-relative
+    'header-line `(:overline ,(face-foreground 'default)
+                   :height 0.5
+                   :background ,(face-background 'default))))
 
 (defun lambda-line-calendar-activate ()
   (with-eval-after-load 'calendar
@@ -1820,8 +1859,8 @@ MODE-FORMAT is the mode format pair."
                                 (in-process (elfeed-queue-count-active)))
                             (format "%d jobs pending, %d active"
                                     (- total in-process) in-process)))
-                         (t  (let* ((db-time (seconds-to-time (elfeed-db-last-update)))
-                                    (unread))
+                         (t  (let* ((_db-time (seconds-to-time (elfeed-db-last-update)))
+                                    (_unread))
                                (cond (elfeed-search-filter-active "")
                                      ((string-match-p "[^ ]" elfeed-search-filter)
                                       elfeed-search-filter)
@@ -1861,7 +1900,7 @@ MODE-FORMAT is the mode format pair."
          (date (seconds-to-time (elfeed-entry-date elfeed-show-entry)))
          (feed (elfeed-entry-feed elfeed-show-entry))
          (entry-author (elfeed-meta elfeed-show-entry :author))
-         (feed-title (if entry-author
+         (_feed-title (if entry-author
                          (concat entry-author " (" (elfeed-feed-title feed) ")")
                        (elfeed-feed-title feed))))
     (lambda-line-compose
@@ -1899,13 +1938,6 @@ depending on the version of mu4e."
   (if (version< mu4e-mu-version "1.6.0")
       mu4e~server-props
     mu4e--server-props))
-
-(defun lambda-line-mu4e-activate ()
-  (with-eval-after-load 'mu4e
-    (advice-add 'mu4e~header-line-format :override #'lambda-line)))
-
-(defun lambda-line-mu4e-deactivate ()
-  (advice-remove #'mu4e~header-line-format #'lambda-line))
 
 ;; ---------------------------------------------------------------------
 (defun lambda-line-mu4e-dashboard-mode-p (_mode-format)
@@ -2042,7 +2074,7 @@ MODE-FORMAT is the mode format pair."
 
 ;;;; Buffer Menu Mode
 ;; ---------------------------------------------------------------------
-(defun lambda-line-buffer-menu-mode (mode-format)
+(defun lambda-line-Buffer-menu-mode (mode-format)
   (let ((buffer-name "Buffer list")
         (mode-name   (lambda-line-mode-name))
         (position    (format-mode-line "%l:%c")))
@@ -2054,7 +2086,7 @@ MODE-FORMAT is the mode format pair."
                          nil
                          (concat
                           position
-                          (lambda-line-time)))))
+                          (concat position lambda-line-hspace (lambda-line-time))))))
 
 ;;(defun buffer-menu-mode-header-line ()
 ;;  (face-remap-add-relative
@@ -2062,11 +2094,11 @@ MODE-FORMAT is the mode format pair."
 ;;(add-hook 'Buffer-menu-mode-hook
 ;;          #'buffer-menu-mode-header-line)
 
-(defun lambda-line-buffer-menu-activate ()
+(defun lambda-line-Buffer-menu-activate ()
   (if (eq lambda-line-position 'top)
       (setq Buffer-menu-use-header-line nil)))
 
-(defun lambda-line-buffer-menu-deactivate ()
+(defun lambda-line-Buffer-menu-deactivate ()
   (custom-reevaluate-setting 'Buffer-menu-use-header-line))
 
 ;;;; Elpher Mode
@@ -2130,10 +2162,10 @@ MODE-FORMAT is the mode format pair."
     'modified))
 
 (defun lambda-line-magit-mode (mode-format)
-  (let* ((buffer-name (format-mode-line
-                       (if buffer-file-name
-                           (file-name-nondirectory (buffer-file-name))
-                         "%b")))
+  (let* (;;(buffer-name (format-mode-line
+         ;;              (if buffer-file-name
+         ;;                  (file-name-nondirectory (buffer-file-name))
+         ;;                "%b")))
          (mode-name   (lambda-line-mode-name))
          (project     (file-name-nondirectory (directory-file-name (magit-toplevel))))
          (branch      (magit-get-current-branch))
