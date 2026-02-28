@@ -2067,8 +2067,8 @@ depending on the version of mu4e."
                            (file-name-nondirectory (buffer-file-name))
                          "%b")))
          (mode-name   (lambda-line-mode-name))
-         (project     (file-name-nondirectory (directory-file-name (magit-toplevel))))
-         (branch      (magit-get-current-branch))
+         (project     (file-name-nondirectory (directory-file-name (or (magit-toplevel) ""))))
+         (branch      (or (magit-get-current-branch) ""))
          (status      (lambda-line-git-parse-status)))
     (lambda-line-compose (lambda-line-status)
                          mode-name
