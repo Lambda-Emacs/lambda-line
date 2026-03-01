@@ -309,26 +309,26 @@ Time info is only shown `display-time-mode' is non-nil"
     (term-mode              :format lambda-line-term-mode
                             :prefix-symbol " >_"
                             :name "Terminal"
-                            :face-prefix-active 'lambda-line-active-status-MD
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-MD
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (vterm-mode             :format lambda-line-term-mode
                             :prefix-symbol " >_"
                             :name "VTerm"
-                            :face-prefix-active 'lambda-line-active-status-MD
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-MD
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (eshell-mode            :format lambda-line-shell-mode
                             :prefix-symbol " λ:"
                             :name "Eshell"
-                            :face-prefix-active 'lambda-line-active-status-MD
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-MD
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (shell-mode             :format lambda-line-shell-mode
                             :prefix-symbol " >"
                             :name "Shell"
-                            :face-prefix-active 'lambda-line-active-status-MD
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-MD
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (Buffer-menu-mode       :format lambda-line-Buffer-menu-mode
                             :on-activate lambda-line-Buffer-menu-activate
@@ -353,27 +353,27 @@ Time info is only shown `display-time-mode' is non-nil"
     (elpher-mode            :format lambda-line-elpher-mode
                             :on-activate lambda-line-elpher-activate)
     (gud-mode               :prefix-symbol " 🐞"
-                            :face-prefix-active 'lambda-line-active-status-MD
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-MD
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (help-mode              :format lambda-line-help-mode
                             :abbrev "?"
                             :prefix-symbol " ?"
-                            :face-prefix-active 'lambda-line-active-status-RO
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-RO
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (helpful-mode           :format lambda-line-help-mode
                             :abbrev "?"
                             :prefix-symbol " ?"
-                            :face-prefix-active 'lambda-line-active-status-RO
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-RO
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (Info-mode              :format lambda-line-Info-mode
                             :on-activate lambda-line-Info-activate
                             :on-deactivate lambda-line-Info-deactivate
                             :prefix-symbol " ℹ"
-                            :face-prefix-active 'lambda-line-active-status-RO
-                            :face-prefix-inactive 'lambda-line-inactive-status-RW
+                            :face-prefix-active lambda-line-active-status-RO
+                            :face-prefix-inactive lambda-line-inactive-status-RW
                             :always-modifiable t)
     (magit-mode             :format lambda-line-magit-mode
                             :abbrev "MG"
