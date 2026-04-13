@@ -3,7 +3,7 @@
 ;; Author: Colin McLear
 ;; Maintainer: Colin McLear
 ;; Version: 0.2.0
-;; Package-Requires: ((emacs "27.1") (all-the-icons "5.0.0"))
+;; Package-Requires: ((emacs "27.1"))
 ;; Homepage: https://github.com/Lambda-Emacs/lambda-line
 ;; Keywords: mode-line faces
 
@@ -35,7 +35,6 @@
 
 (require 'face-remap)
 (require 'cl-lib)
-(require 'all-the-icons)
 
 ;; Declare optional functions to suppress compiler warnings
 (declare-function magit-get-current-branch "magit-git")
