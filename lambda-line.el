@@ -1936,13 +1936,6 @@ depending on the version of mu4e."
                            (concat (or (and date (format-time-string mu4e-headers-date-format date)) "") " ")))
     (error (lambda-line-compose (lambda-line-status) "Email" "" "" ""))))
 
-(defun lambda-line-mu4e-activate ()
-  (with-eval-after-load 'mu4e
-    (advice-add 'mu4e~header-line-format :override #'lambda-line)))
-
-(defun lambda-line-mu4e-deactivate ()
-  (advice-remove #'mu4e~header-line-format #'lambda-line))
-
 ;;;; Ein
 
 (defun lambda-line-ein-notebook-mode ()
