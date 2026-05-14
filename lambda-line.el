@@ -500,11 +500,11 @@ This is if no match could be found in `lambda-lines-mode-formats'"
   :group 'lambda-line-inactive)
 
 (defface lambda-line-hspace-active
-  '((t (:invisible t :family "Monospace" :inherit (lambda-line))))
+  '((t (:family "Monospace" :inherit (lambda-line))))
   "Face for vertical spacer in active line.")
 
 (defface lambda-line-hspace-inactive
-  '((t (:invisible t :family "Monospace" :inherit (lambda-line-inactive))))
+  '((t (:family "Monospace" :inherit (lambda-line-inactive))))
   "Face for vertical spacer in inactive line.")
 
 (defface lambda-line-active-name
