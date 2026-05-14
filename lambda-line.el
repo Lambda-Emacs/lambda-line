@@ -1963,30 +1963,6 @@ depending on the version of mu4e."
       (setq ein:header-line-format '(:eval (ein:header-line)))))
 
 
-;;;; Buffer Menu Mode
-;; ---------------------------------------------------------------------
-(defun lambda-line-buffer-menu-mode-p ()
-  (derived-mode-p 'buffer-menu-mode))
-
-(defun lambda-line-buffer-menu-mode ()
-  (let ((buffer-name "Buffer list")
-        (mode-name   (lambda-line-mode-name))
-        (position    (format-mode-line "%l:%c")))
-
-    (lambda-line-compose nil
-                         buffer-name
-                         ""
-                         nil
-                         (concat
-                          position
-                          (lambda-line-time)))))
-
-;;(defun buffer-menu-mode-header-line ()
-;;  (face-remap-add-relative
-;;   'header-line `(:background ,(face-background 'nano-subtle))))
-;;(add-hook 'Buffer-menu-mode-hook
-;;          #'buffer-menu-mode-header-line)
-
 (defun lambda-line-buffer-menu-activate ()
   (if (eq lambda-line-position 'top)
       (setq Buffer-menu-use-header-line nil)))
