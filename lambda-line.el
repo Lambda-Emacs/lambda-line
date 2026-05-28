@@ -1707,7 +1707,6 @@ STATUS, NAME, PRIMARY, and SECONDARY are always displayed. TERTIARY is displayed
                             (propertize "⇥ "  'face `(:inherit lambda-line-inactive-secondary)))
                           org-mode-line-string
                           " "
-                          nil
                           position
                           lambda-line-hspace))))
 
